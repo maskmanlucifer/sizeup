@@ -90,14 +90,18 @@ const FlipkartPlatform = (() => {
 
   /**
    * Reads active size filters from the URL.
-   * Flipkart encodes each size as a separate `p[]=facets.size[]=<VALUE>` param.
+   * Flipkart's native URLs double-encode the value (`facets.size%5B%5D%3DL`),
+   * so we decode each value before matching to handle both single- and double-
+   * encoded forms.
    * @returns {Set<string>} lowercase active size values
    */
   function getCurrentFilters() {
     const params = new URLSearchParams(location.search);
     const active = new Set();
     for (const v of params.getAll('p[]')) {
-      const m = v.match(/^facets\.size\[\]=(.+)$/i);
+      // Decode once more because Flipkart double-encodes the value in native URLs
+      const decoded = _safeDecode(v);
+      const m = decoded.match(/^facets\.size\[\]=(.+)$/i);
       if (m) active.add(m[1].toLowerCase());
     }
     return active;
@@ -113,12 +117,17 @@ const FlipkartPlatform = (() => {
    */
   function buildFilterUrl(facetValues) {
     const url = new URL(location.href);
-    // Keep all p[] params that are not size facets
-    const others = url.searchParams.getAll('p[]').filter(v => !/^facets\.size\[\]=/i.test(v));
+    // Keep all p[] params that are not size facets (handle both encodings)
+    const others = url.searchParams.getAll('p[]').filter(v => !/^facets\.size(\[\]|%5B%5D)=/i.test(v) && !/^facets\.size\[\]=/i.test(_safeDecode(v)));
     url.searchParams.delete('p[]');
     for (const v of others) url.searchParams.append('p[]', v);
     for (const size of facetValues) url.searchParams.append('p[]', `facets.size[]=${size}`);
     return url.toString();
+  }
+
+  /** Safely decodes a percent-encoded string; returns original on error. */
+  function _safeDecode(v) {
+    try { return decodeURIComponent(v); } catch (_) { return v; }
   }
 
   // ── Public interface ────────────────────────────────────────────────────────

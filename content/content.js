@@ -25,6 +25,12 @@
     return null;
   }
 
+  // ── Session dismissal state ─────────────────────────────────────────────────
+
+  // Once a widget is dismissed, it stays hidden for the rest of the tab session
+  let _barDismissed    = false;
+  let _bannerDismissed = false;
+
   // ── Product page handler ────────────────────────────────────────────────────
 
   /**
@@ -49,7 +55,7 @@
                       sz.bottom ? `Waist ${sz.bottom.label}` :
                       sz.shoe   ? `UK ${sz.shoe.uk}` : '?';
 
-      // Exact match first
+      // Try exact match first
       for (const el of els) {
         const text = platform.sizeText(el);
         if (!text || !sizeMatches(text, exact)) continue;
@@ -58,7 +64,7 @@
         return { profile: p, status: avail ? 'avail' : 'unavail', matchType: 'exact', szLabel };
       }
 
-      // Adjacent match — handles brand size variation (e.g. what's "L" here is "XL" elsewhere)
+      // Adjacent match — handles brand size variation (e.g. "L" here = "XL" on another brand)
       for (const el of els) {
         const text = platform.sizeText(el);
         if (!text || !sizeMatches(text, adjacent)) continue;
@@ -70,16 +76,20 @@
     }).filter(Boolean);
 
     if (!results.length) return;
-    SizeUpUI.showBanner({ results });
+
+    SizeUpUI.showBanner({
+      results,
+      onDismiss() { _bannerDismissed = true; },
+    });
   }
 
   // ── Listing page handler ────────────────────────────────────────────────────
 
   /**
-   * Builds the profile card data for the listing bar and wires up the toggle click.
+   * Builds profile card data for the listing bar and wires up toggle clicks.
    * Each card click toggles that profile's size facet in/out of the URL filter.
    *
-   * @param {Object}   profile     - active profile (used to derive the default category)
+   * @param {Object}   profile     - active profile
    * @param {Object[]} allProfiles
    */
   async function handleListing(profile, allProfiles) {
@@ -96,10 +106,10 @@
       const sz      = deriveSizes(p.measurements || {});
       const szLabel = sz.top ? sz.top.alpha : sz.bottom ? sz.bottom.label : sz.shoe ? `UK${sz.shoe.uk}` : '?';
       return {
-        profile:     p,
+        profile:    p,
         szLabel,
-        facetValue:  facet.facetValue,
-        checked:     activeFacets.has(facet.facetValue.toLowerCase()),
+        facetValue: facet.facetValue,
+        checked:    activeFacets.has(facet.facetValue.toLowerCase()),
       };
     }).filter(Boolean);
 
@@ -107,6 +117,7 @@
 
     SizeUpUI.showBar({
       cardData,
+      onDismiss() { _barDismissed = true; },
       onCardClick(facetValue, checked) {
         _navigating = true;
         const next = new Set(activeFacets);
@@ -144,10 +155,10 @@
 
     if (platform.onProductPage()) {
       SizeUpUI.removeBar();
-      await handleProduct(profile, profiles);
+      if (!_bannerDismissed) await handleProduct(profile, profiles);
     } else if (platform.onListingPage()) {
       SizeUpUI.removeBanner();
-      await handleListing(profile, profiles);
+      if (!_barDismissed) await handleListing(profile, profiles);
     }
   }
 
@@ -155,12 +166,12 @@
     return new Promise(r => setTimeout(r, ms));
   }
 
-  // Suppress re-init when we're intentionally navigating away (filter card click)
+  // Suppress re-init when intentionally navigating away via filter card click
   let _navigating = false;
 
   // Re-run on SPA navigation (debounced so rapid DOM mutations don't multi-fire)
-  let _lastUrl   = location.href;
-  let _navTimer  = null;
+  let _lastUrl  = location.href;
+  let _navTimer = null;
   new MutationObserver(() => {
     if (_navigating) return;
     if (location.href !== _lastUrl) {

@@ -46,8 +46,13 @@ const SizeUpUI = (() => {
       }
       #sizeup-bar .su-bar-heading {
         font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
-        opacity: 0.7; text-transform: uppercase;
+        opacity: 0.7; text-transform: uppercase; flex: 1;
       }
+      #sizeup-bar .su-bar-close {
+        background: none; border: none; cursor: pointer;
+        color: rgba(255,255,255,0.45); font-size: 13px; padding: 0; line-height: 1; flex-shrink: 0;
+      }
+      #sizeup-bar .su-bar-close:hover { color: #fff; }
       /* profile cards */
       #sizeup-bar .su-bar-profiles {
         display: flex; flex-direction: column; gap: 5px;
@@ -158,18 +163,19 @@ const SizeUpUI = (() => {
   }
 
   /**
-   * Renders the listing bar with multi-select profile cards.
+   * Renders the listing bar with multi-select profile cards and a dismiss button.
    *
    * @param {{
-   *   cardData: Array<{ profile: Object, szLabel: string, facetValue: string, checked: boolean }>,
-   *   onCardClick: (facetValue: string, checked: boolean) => void
+   *   cardData:    Array<{ profile: Object, szLabel: string, facetValue: string, checked: boolean }>,
+   *   onCardClick: (facetValue: string, checked: boolean) => void,
+   *   onDismiss:   () => void
    * }} opts
    */
-  function showBar({ cardData, onCardClick }) {
+  function showBar({ cardData, onCardClick, onDismiss }) {
     removeBar();
-    const bar      = document.createElement('div');
-    bar.id         = BAR_ID;
-    const iconUrl  = chrome.runtime.getURL('icons/icon48.png');
+    const bar     = document.createElement('div');
+    bar.id        = BAR_ID;
+    const iconUrl = chrome.runtime.getURL('icons/icon48.png');
 
     const cards = cardData.map(({ profile, szLabel, checked }) => `
       <div class="su-bar-pcard${checked ? ' active' : ''}">
@@ -183,6 +189,7 @@ const SizeUpUI = (() => {
       <div class="su-bar-head">
         <div class="su-bar-logo"><img src="${iconUrl}" alt="" /></div>
         <span class="su-bar-heading">Filter for</span>
+        <button class="su-bar-close" title="Dismiss">✕</button>
       </div>
       <div class="su-bar-profiles">${cards}</div>
     `;
@@ -190,6 +197,10 @@ const SizeUpUI = (() => {
     bar.querySelectorAll('.su-bar-pcard').forEach((card, i) => {
       const { facetValue, checked } = cardData[i];
       card.addEventListener('click', () => onCardClick(facetValue, checked));
+    });
+    bar.querySelector('.su-bar-close').addEventListener('click', () => {
+      removeBar();
+      onDismiss();
     });
 
     document.body.appendChild(bar);
@@ -205,15 +216,11 @@ const SizeUpUI = (() => {
    * Renders the floating product banner showing fit status for each profile.
    *
    * @param {{
-   *   results: Array<{
-   *     profile: Object,
-   *     status: 'avail'|'unavail'|'unlisted',
-   *     matchType: 'exact'|'adjacent',
-   *     szLabel: string
-   *   }>
+   *   results:   Array<{ profile: Object, status: 'avail'|'unavail'|'unlisted', matchType: 'exact'|'adjacent', szLabel: string }>,
+   *   onDismiss: () => void
    * }} opts
    */
-  function showBanner({ results }) {
+  function showBanner({ results, onDismiss }) {
     removeBanner();
     if (!results.length) return;
 
@@ -250,7 +257,10 @@ const SizeUpUI = (() => {
       </div>
     `;
 
-    el.querySelector('.su-close').addEventListener('click', removeBanner);
+    el.querySelector('.su-close').addEventListener('click', () => {
+      removeBanner();
+      onDismiss();
+    });
     document.body.appendChild(el);
   }
 

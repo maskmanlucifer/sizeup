@@ -13,8 +13,19 @@ const DEFAULT_DATA = {
 
 function getStorageData() {
   return new Promise(resolve => {
-    chrome.storage.sync.get(STORAGE_KEY, result => {
-      resolve(result[STORAGE_KEY] || { ...DEFAULT_DATA });
+    chrome.storage.sync.get(STORAGE_KEY, syncResult => {
+      if (syncResult[STORAGE_KEY]) {
+        resolve(syncResult[STORAGE_KEY]);
+        return;
+      }
+      // One-time migration: if sync is empty, pull from local and promote it
+      chrome.storage.local.get(STORAGE_KEY, localResult => {
+        const data = localResult[STORAGE_KEY] || { ...DEFAULT_DATA };
+        if (localResult[STORAGE_KEY]) {
+          chrome.storage.sync.set({ [STORAGE_KEY]: data });
+        }
+        resolve(data);
+      });
     });
   });
 }
