@@ -128,8 +128,30 @@ function showHome() {
 
 // ── Derived sizes preview ─────────────────────────────────────────────────────
 
+/** Shows a warning if any measurement looks like a clothing size, not a body cm value. */
+function refreshWarnings(m) {
+  const existing = document.getElementById('measure-warn');
+  if (existing) existing.remove();
+
+  const suspicious = [];
+  if (m.chest && m.chest < 60)      suspicious.push(`Chest ${m.chest} cm seems too small — did you enter a clothing size (e.g. 38) instead of body measurement (~96 cm)?`);
+  if (m.waist && m.waist < 40)      suspicious.push(`Waist ${m.waist} cm seems too small — enter body measurement in cm (e.g. 80), not pant size (e.g. 30).`);
+  if (m.shoeLength && m.shoeLength < 15) suspicious.push(`Shoe foot length ${m.shoeLength} cm seems too small — measure your foot heel to toe (e.g. 26.5 cm).`);
+
+  if (!suspicious.length) return;
+
+  const box = document.createElement('div');
+  box.id = 'measure-warn';
+  box.className = 'warn-box';
+  box.innerHTML = `<span>⚠️</span><span>${suspicious[0]}</span>`;
+
+  // Insert before derived-box
+  derivedBox.before(box);
+}
+
 function refreshDerived() {
   const m = readMeasurements();
+  refreshWarnings(m);
   const sizes = deriveSizes(m);
   const hasAny = sizes.top || sizes.bottom || sizes.shoe;
 
