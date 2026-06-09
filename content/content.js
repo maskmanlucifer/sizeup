@@ -74,28 +74,16 @@
       #sizeup-bar .su-bar-pcard.active .su-pcard-check {
         background: #fff; border-color: #fff; color: #5C35E8;
       }
-      #sizeup-bar .su-pcard-avatar { font-size: 17px; line-height: 1; }
-      #sizeup-bar .su-pcard-info { flex: 1; min-width: 0; }
+      #sizeup-bar .su-pcard-avatar { font-size: 17px; line-height: 1; flex-shrink: 0; }
       #sizeup-bar .su-pcard-name {
-        font-size: 12px; font-weight: 600; display: block;
+        flex: 1; font-size: 12px; font-weight: 600;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
-      #sizeup-bar .su-pcard-size {
-        font-size: 11px; opacity: 0.65; display: block; margin-top: 1px;
+      #sizeup-bar .su-pcard-size-big {
+        font-size: 20px; font-weight: 800; letter-spacing: -0.5px;
+        color: rgba(255,255,255,0.75); flex-shrink: 0; line-height: 1;
       }
-      /* CTA button */
-      #sizeup-bar .su-bar-btn {
-        display: block; width: 100%; height: 32px;
-        border-radius: 8px; font-size: 12px; font-weight: 700;
-        cursor: pointer; border: none; font-family: inherit;
-        transition: opacity 0.15s; text-align: center;
-      }
-      #sizeup-bar .su-bar-btn:hover { opacity: 0.88; }
-      #sizeup-bar .su-bar-apply { background: #fff; color: #5C35E8; }
-      #sizeup-bar .su-bar-clear {
-        background: rgba(255,255,255,0.15); color: #fff;
-        border: 1px solid rgba(255,255,255,0.3);
-      }
+      #sizeup-bar .su-bar-pcard.active .su-pcard-size-big { color: #fff; }
 
       /* ── Product banner (white card) ── */
       #sizeup-banner {
@@ -113,22 +101,48 @@
       #sizeup-banner .su-banner-body { padding: 11px 13px 13px; }
       #sizeup-banner .su-top-row {
         display: flex; align-items: flex-start;
-        justify-content: space-between; margin-bottom: 2px;
+        justify-content: space-between; margin-bottom: 8px;
       }
-      #sizeup-banner .su-hero {
-        font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #111827;
-        line-height: 1;
-      }
-      #sizeup-banner .su-hero-sub {
-        font-size: 12px; color: #6B7280; margin-top: 3px; margin-bottom: 10px;
+      #sizeup-banner .su-heading {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+        text-transform: uppercase; color: #6B7280;
       }
       #sizeup-banner .su-close {
         background: none; border: none; cursor: pointer;
         color: #9CA3AF; font-size: 15px; padding: 0; line-height: 1; flex-shrink: 0;
-        margin-top: 2px;
       }
       #sizeup-banner .su-close:hover { color: #374151; }
-      #sizeup-banner .su-actions { display: flex; gap: 6px; margin-top: 11px; }
+      /* profile result cards */
+      #sizeup-banner .su-banner-profiles {
+        display: flex; flex-direction: column; gap: 5px;
+      }
+      #sizeup-banner .su-bpc {
+        display: flex; align-items: center; gap: 9px;
+        border: 1px solid #F0EEFF; border-radius: 9px;
+        padding: 7px 10px; background: #FAFAFF;
+      }
+      #sizeup-banner .su-bpc-dot {
+        width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      }
+      #sizeup-banner .su-bpc-dot.avail   { background: #22C55E; }
+      #sizeup-banner .su-bpc-dot.unavail { background: #EF4444; }
+      #sizeup-banner .su-bpc-dot.unlisted { background: #D1D5DB; }
+      #sizeup-banner .su-bpc-avatar { font-size: 16px; line-height: 1; }
+      #sizeup-banner .su-bpc-info { flex: 1; min-width: 0; }
+      #sizeup-banner .su-bpc-name {
+        font-size: 12px; font-weight: 600; display: block; color: #111827;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      #sizeup-banner .su-bpc-size { font-size: 11px; color: #6B7280; display: block; }
+      #sizeup-banner .su-bpc-tag {
+        font-size: 10px; font-weight: 600; padding: 2px 7px;
+        border-radius: 999px; flex-shrink: 0;
+      }
+      #sizeup-banner .su-bpc-tag.avail   { background: #DCFCE7; color: #15803D; }
+      #sizeup-banner .su-bpc-tag.unavail { background: #FEE2E2; color: #B91C1C; }
+      #sizeup-banner .su-bpc-tag.unlisted { background: #F3F4F6; color: #6B7280; }
+      /* action button */
+      #sizeup-banner .su-actions { display: flex; gap: 6px; margin-top: 10px; }
       #sizeup-banner .su-btn {
         height: 30px; padding: 0 14px; border-radius: 8px;
         font-size: 12px; font-weight: 600; cursor: pointer;
@@ -136,35 +150,8 @@
       }
       #sizeup-banner .su-btn:hover { opacity: 0.85; }
       #sizeup-banner .su-primary { background: #5C35E8; color: #fff; }
-      #sizeup-banner .su-secondary { background: #F3F4F6; color: #374151; }
       #sizeup-banner .su-brand {
         font-size: 10px; color: #C4B5FD; text-align: right; margin-top: 9px;
-      }
-
-      /* ── Profile switcher chips (shared, different themes) ── */
-      .su-profiles {
-        display: flex; gap: 5px; flex-wrap: wrap;
-        padding-top: 9px; margin-top: 9px;
-      }
-      #sizeup-bar    .su-profiles { border-top: 1px solid rgba(255,255,255,0.18); }
-      #sizeup-banner .su-profiles { border-top: 1px solid #F0EEFF; }
-      .su-profile-chip {
-        height: 24px; padding: 0 9px; border-radius: 999px;
-        font-size: 11px; font-weight: 500; cursor: pointer;
-        font-family: inherit; white-space: nowrap; transition: all 0.12s;
-      }
-      #sizeup-bar .su-profile-chip {
-        background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8);
-        border: 1px solid rgba(255,255,255,0.28);
-      }
-      #sizeup-bar .su-profile-chip.active {
-        background: #fff; color: #5C35E8; border-color: transparent; font-weight: 700;
-      }
-      #sizeup-banner .su-profile-chip {
-        background: #F5F3FF; color: #6B7280; border: 1px solid #E9E6FF;
-      }
-      #sizeup-banner .su-profile-chip.active {
-        background: #EDE9FE; color: #5C35E8; border-color: #5C35E8; font-weight: 700;
       }
 
       /* ── Size highlight on product pages ── */
@@ -182,68 +169,44 @@
     document.getElementById(BAR_ID)?.remove();
   }
 
-  function profileChipsHtml(profiles, activeId) {
-    return profiles.map(p =>
-      `<button class="su-profile-chip${p.id === activeId ? ' active' : ''}" data-id="${p.id}">${p.emoji} ${p.name}</button>`
-    ).join('');
-  }
-
-  function attachProfileChips(el, activeId) {
-    el.querySelectorAll('.su-profile-chip').forEach(chip => {
-      chip.addEventListener('click', async () => {
-        if (chip.dataset.id === activeId) return;
-        await setActiveProfile(chip.dataset.id);
-        cleanup(); init();
-      });
-    });
-  }
-
-  function showBar({ profile, allProfiles, sizeLabel, facetValue, isFiltered }) {
+  function showBar({ profile, allProfiles, isFiltered }) {
     removeBar();
     const bar = document.createElement('div');
     bar.id = BAR_ID;
 
-    const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+    const iconUrl    = chrome.runtime.getURL('icons/icon48.png');
+    const category   = getMyntraCategory();
 
-    const cards = allProfiles.map(p => {
-      const sz = deriveSizes(p.measurements || {});
-      const szLabel = sz.top    ? `${sz.top.alpha} · ${sz.top.numeric}` :
-                      sz.bottom ? `Waist ${sz.bottom.label}` : '—';
-      const active = p.id === profile.id;
-      return `
-        <div class="su-bar-pcard${active ? ' active' : ''}" data-id="${p.id}">
-          <span class="su-pcard-check">${active ? '✓' : ''}</span>
-          <span class="su-pcard-avatar">${p.emoji}</span>
-          <span class="su-pcard-info">
-            <span class="su-pcard-name">${p.name}</span>
-            <span class="su-pcard-size">${szLabel}</span>
-          </span>
-        </div>`;
-    }).join('');
+    const cardData = allProfiles.map(p => {
+      const mapped = getMyntraSizeFacet(p.measurements || {}, category);
+      const sz     = deriveSizes(p.measurements || {});
+      const szLabel = sz.top ? sz.top.alpha : sz.bottom ? sz.bottom.label : sz.shoe ? `UK${sz.shoe.uk}` : '?';
+      const checked = p.id === profile.id && isFiltered;
+      return { p, szLabel, facetValue: mapped?.facetValue || szLabel, checked };
+    });
+
+    const cards = cardData.map(({ p, szLabel, checked }) => `
+      <div class="su-bar-pcard${checked ? ' active' : ''}" data-id="${p.id}">
+        <span class="su-pcard-check">${checked ? '✓' : ''}</span>
+        <span class="su-pcard-avatar">${p.emoji}</span>
+        <span class="su-pcard-name">${p.name}</span>
+        <span class="su-pcard-size-big">${szLabel}</span>
+      </div>`).join('');
 
     bar.innerHTML = `
       <div class="su-bar-head">
         <div class="su-bar-logo"><img src="${iconUrl}" alt="" /></div>
-        <span class="su-bar-heading">Filter</span>
+        <span class="su-bar-heading">Filter for</span>
       </div>
       <div class="su-bar-profiles">${cards}</div>
-      ${isFiltered
-        ? `<button class="su-bar-btn su-bar-clear" id="su-clear">✓ Clear filter</button>`
-        : `<button class="su-bar-btn su-bar-apply" id="su-apply">Filter by ${sizeLabel}</button>`
-      }
     `;
 
-    if (isFiltered) {
-      bar.querySelector('#su-clear').addEventListener('click', () => { location.href = buildClearUrl(); });
-    } else {
-      bar.querySelector('#su-apply').addEventListener('click', () => { location.href = buildFilterUrl(facetValue); });
-    }
-
-    bar.querySelectorAll('.su-bar-pcard').forEach(card => {
+    bar.querySelectorAll('.su-bar-pcard').forEach((card, i) => {
+      const { p, facetValue, checked } = cardData[i];
       card.addEventListener('click', async () => {
-        if (card.dataset.id === profile.id) return;
-        await setActiveProfile(card.dataset.id);
-        cleanup(); init();
+        if (p.id !== profile.id) await setActiveProfile(p.id);
+        // Tap checked card = clear; tap any other = apply that profile's filter
+        location.href = checked ? buildClearUrl() : buildFilterUrl(facetValue);
       });
     });
 
@@ -256,29 +219,52 @@
     document.getElementById(BANNER_ID)?.remove();
   }
 
-  function showBanner({ accentClass, hero, sub, actions, profiles, activeProfileId }) {
+  /**
+   * @param {{ results: Array<{profile, status, szLabel}>, selectEl: Element|null }} opts
+   */
+  function showBanner({ results, selectEl }) {
     removeBanner();
+    if (!results.length) return;
+
+    // Accent colour driven by best outcome across all profiles
+    const best = results.find(r => r.status === 'avail') ||
+                 results.find(r => r.status === 'unavail') ||
+                 results[0];
+    const accentClass = best.status;
+
+    const tagLabel = { avail: 'Fits', unavail: 'Out of stock', unlisted: 'Not offered' };
+
+    const cards = results.map(r => `
+      <div class="su-bpc">
+        <span class="su-bpc-dot ${r.status}"></span>
+        <span class="su-bpc-avatar">${r.profile.emoji}</span>
+        <span class="su-bpc-info">
+          <span class="su-bpc-name">${r.profile.name}</span>
+          <span class="su-bpc-size">${r.szLabel}</span>
+        </span>
+        <span class="su-bpc-tag ${r.status}">${tagLabel[r.status]}</span>
+      </div>`).join('');
+
     const el = document.createElement('div');
     el.id = BANNER_ID;
     el.innerHTML = `
       <div class="su-accent ${accentClass}"></div>
       <div class="su-banner-body">
         <div class="su-top-row">
-          <div class="su-hero">${hero}</div>
+          <span class="su-heading">Fits available for</span>
           <button class="su-close" title="Dismiss">✕</button>
         </div>
-        ${sub ? `<div class="su-hero-sub">${sub}</div>` : ''}
-        ${profiles?.length ? `<div class="su-profiles">${profileChipsHtml(profiles, activeProfileId)}</div>` : ''}
-        ${actions?.length ? `
+        <div class="su-banner-profiles">${cards}</div>
+        ${selectEl ? `
           <div class="su-actions">
-            ${actions.map(a => `<button class="su-btn ${a.primary ? 'su-primary' : 'su-secondary'}" data-id="${a.id}">${a.label}</button>`).join('')}
+            <button class="su-btn su-primary" id="su-select">Select size</button>
           </div>` : ''}
         <div class="su-brand">SizeUp</div>
       </div>
     `;
+
     el.querySelector('.su-close').addEventListener('click', removeBanner);
-    actions?.forEach(a => el.querySelector(`[data-id="${a.id}"]`)?.addEventListener('click', a.onClick));
-    if (profiles?.length) attachProfileChips(el, activeProfileId);
+    if (selectEl) el.querySelector('#su-select').addEventListener('click', () => { selectEl.click(); removeBanner(); });
     document.body.appendChild(el);
   }
 
@@ -485,70 +471,45 @@
     const els = findSizeElements();
     if (!els.length) return;
 
-    const labels = getSizeLabels(profile.measurements || {});
-    if (!labels.length) return;
+    let activeSelectEl = null;
 
-    let matchEl = null;
-    let available = false;
+    const results = allProfiles.map(p => {
+      const labels = getSizeLabels(p.measurements || {});
+      if (!labels.length) return null;
 
-    for (const el of els) {
-      const text = sizeText(el);
-      if (!text || !sizeMatches(text, labels)) continue;
-      matchEl = el;
-      available = !isUnavailable(el);
-      el.classList.add('sizeup-match');
-      break;
-    }
+      const sz      = deriveSizes(p.measurements || {});
+      const szLabel = sz.top    ? `${sz.top.alpha} · ${sz.top.numeric}` :
+                      sz.bottom ? `Waist ${sz.bottom.label}` :
+                      sz.shoe   ? `UK ${sz.shoe.uk}` : '?';
 
-    const sz = deriveSizes(profile.measurements || {});
-    const sizeHero = sz.top    ? sz.top.alpha :
-                     sz.bottom ? sz.bottom.label :
-                     sz.shoe   ? `UK ${sz.shoe.uk}` : '?';
-    const sizeSub  = sz.top    ? sz.top.numeric :
-                     sz.bottom ? 'Waist' : '';
+      for (const el of els) {
+        const text = sizeText(el);
+        if (!text || !sizeMatches(text, labels)) continue;
+        const avail = !isUnavailable(el);
+        if (p.id === profile.id) {
+          el.classList.add('sizeup-match');
+          if (avail) activeSelectEl = el;
+        }
+        return { profile: p, status: avail ? 'avail' : 'unavail', szLabel };
+      }
+      return { profile: p, status: 'unlisted', szLabel };
+    }).filter(Boolean);
 
-    const sharedProps = { profiles: allProfiles, activeProfileId: profile.id };
-
-    if (!matchEl) {
-      showBanner({
-        accentClass: 'unlisted',
-        hero: sizeHero,
-        sub: `Not offered on this product`,
-        ...sharedProps,
-      });
-      return;
-    }
-
-    if (available) {
-      showBanner({
-        accentClass: 'avail',
-        hero: `${sizeHero} fits ${profile.name}`,
-        sub: sizeSub ? `${sizeSub} · highlighted above` : 'Highlighted above',
-        actions: [{ id: 'sel', label: 'Select size', primary: true, onClick: () => { matchEl.click(); removeBanner(); } }],
-        ...sharedProps,
-      });
-    } else {
-      showBanner({
-        accentClass: 'unavail',
-        hero: `${sizeHero} out of stock`,
-        sub: `${profile.name}'s size isn't available`,
-        ...sharedProps,
-      });
-    }
+    if (!results.length) return;
+    showBanner({ results, selectEl: activeSelectEl });
   }
 
   async function handleListing(profile, allProfiles) {
     if (site() !== 'myntra') return;
 
     const category = getMyntraCategory();
-    const mapped = getMyntraSizeFacet(profile.measurements || {}, category);
+    const mapped   = getMyntraSizeFacet(profile.measurements || {}, category);
     if (!mapped) return;
 
-    const { sizeLabel, facetValue } = mapped;
     const currentFacet = getCurrentFacet();
-    const isFiltered = currentFacet?.toLowerCase() === facetValue.toLowerCase();
+    const isFiltered   = currentFacet?.toLowerCase() === mapped.facetValue.toLowerCase();
 
-    showBar({ profile, allProfiles, sizeLabel, facetValue, isFiltered });
+    showBar({ profile, allProfiles, isFiltered });
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
