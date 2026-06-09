@@ -6,28 +6,104 @@
 (function () {
   'use strict';
 
+  const BAR_ID    = 'sizeup-bar';
   const BANNER_ID = 'sizeup-banner';
   const STYLES_ID = 'sizeup-styles';
 
-  // ── Injected CSS ────────────────────────────────────────────────────────────
+  // ── Injected CSS ─────────────────────────────────────────────────────────────
 
   function injectStyles() {
     if (document.getElementById(STYLES_ID)) return;
     const style = document.createElement('style');
     style.id = STYLES_ID;
     style.textContent = `
+      /* ── Persistent top bar (listing pages) ── */
+      #sizeup-bar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: 38px;
+        z-index: 2147483647;
+        background: #5C35E8;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 10px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        font-size: 13px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+        animation: su-bar-in 0.2s ease;
+      }
+      @keyframes su-bar-in {
+        from { transform: translateY(-38px); }
+        to   { transform: translateY(0); }
+      }
+      #sizeup-bar .su-bar-logo {
+        width: 22px; height: 22px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 5px;
+        font-size: 12px; font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      #sizeup-bar .su-bar-profile {
+        font-weight: 600;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      #sizeup-bar .su-bar-sep {
+        opacity: 0.4;
+        flex-shrink: 0;
+      }
+      #sizeup-bar .su-bar-size {
+        opacity: 0.85;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      #sizeup-bar .su-bar-spacer { flex: 1; }
+      #sizeup-bar .su-bar-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      #sizeup-bar .su-bar-filtered {
+        font-size: 12px;
+        background: rgba(255,255,255,0.15);
+        border-radius: 999px;
+        padding: 2px 10px;
+        white-space: nowrap;
+      }
+      #sizeup-bar .su-bar-btn {
+        height: 26px; padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px; font-weight: 600;
+        cursor: pointer; border: none; font-family: inherit;
+        white-space: nowrap;
+        transition: opacity 0.15s;
+      }
+      #sizeup-bar .su-bar-btn:hover { opacity: 0.85; }
+      #sizeup-bar .su-bar-apply {
+        background: #fff;
+        color: #5C35E8;
+      }
+      #sizeup-bar .su-bar-clear {
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        border: 1px solid rgba(255,255,255,0.3);
+      }
+
+      /* ── Floating banner (product pages / learn mode) ── */
       #sizeup-banner {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        bottom: 20px; right: 20px;
         z-index: 2147483647;
         background: #fff;
         border: 1.5px solid #E5E7EB;
         border-radius: 12px;
         box-shadow: 0 4px 24px rgba(0,0,0,0.13);
         padding: 12px 14px;
-        max-width: 270px;
-        min-width: 220px;
+        max-width: 270px; min-width: 220px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         font-size: 13px;
         color: #111827;
@@ -38,11 +114,7 @@
         from { transform: translateY(8px); opacity: 0; }
         to   { transform: translateY(0);   opacity: 1; }
       }
-      #sizeup-banner .su-row {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-      }
+      #sizeup-banner .su-row { display: flex; align-items: flex-start; gap: 8px; }
       #sizeup-banner .su-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
       #sizeup-banner .su-body { flex: 1; min-width: 0; }
       #sizeup-banner .su-msg { font-weight: 600; }
@@ -61,42 +133,74 @@
       #sizeup-banner .su-primary:hover { background: #4526C9; }
       #sizeup-banner .su-secondary { background: #F3F4F6; color: #374151; }
       #sizeup-banner .su-secondary:hover { background: #E5E7EB; }
-      #sizeup-banner .su-brand {
-        font-size: 10px; color: #9CA3AF; text-align: right;
-        margin-top: 8px; letter-spacing: 0.3px;
-      }
-      .sizeup-match {
-        outline: 2.5px solid #5C35E8 !important;
-        outline-offset: 2px;
-      }
-      /* Learn-mode size picker */
-      #sizeup-banner .su-learn-sizes {
-        display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;
-      }
+      #sizeup-banner .su-brand { font-size: 10px; color: #9CA3AF; text-align: right; margin-top: 8px; }
+      #sizeup-banner .su-learn-sizes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
       #sizeup-banner .su-size-opt {
         height: 30px; padding: 0 12px;
         border: 1.5px solid #E5E7EB; border-radius: 6px;
         background: #fff; cursor: pointer;
-        font-size: 12px; font-weight: 500; font-family: inherit;
-        color: #111827;
+        font-size: 12px; font-weight: 500; font-family: inherit; color: #111827;
         transition: border-color 0.12s, background 0.12s;
       }
-      #sizeup-banner .su-size-opt:hover {
-        border-color: #5C35E8; background: #EDE9FE; color: #5C35E8;
+      #sizeup-banner .su-size-opt:hover { border-color: #5C35E8; background: #EDE9FE; color: #5C35E8; }
+
+      /* ── Size highlight on product pages ── */
+      .sizeup-match {
+        outline: 2.5px solid #5C35E8 !important;
+        outline-offset: 2px;
       }
     `;
     document.head.appendChild(style);
   }
 
-  // ── Banner ──────────────────────────────────────────────────────────────────
+  // ── Top bar (listing pages) ───────────────────────────────────────────────────
+
+  function removeBar() {
+    document.getElementById(BAR_ID)?.remove();
+  }
+
+  /**
+   * @param {{ profile: Object, sizeLabel: string, facetValue: string, isFiltered: boolean }} opts
+   */
+  function showBar({ profile, sizeLabel, facetValue, isFiltered }) {
+    removeBar();
+    const bar = document.createElement('div');
+    bar.id = BAR_ID;
+
+    bar.innerHTML = `
+      <div class="su-bar-logo">S</div>
+      <div class="su-bar-profile">${profile.emoji} ${profile.name}</div>
+      <div class="su-bar-sep">·</div>
+      <div class="su-bar-size">Size ${sizeLabel}</div>
+      <div class="su-bar-spacer"></div>
+      <div class="su-bar-status">
+        ${isFiltered
+          ? `<span class="su-bar-filtered">✓ Filtered by ${facetValue}</span>
+             <button class="su-bar-btn su-bar-clear" id="su-clear">Clear filter</button>`
+          : `<button class="su-bar-btn su-bar-apply" id="su-apply">Filter by ${sizeLabel}</button>`
+        }
+      </div>
+    `;
+
+    if (isFiltered) {
+      bar.querySelector('#su-clear').addEventListener('click', () => {
+        location.href = buildClearUrl();
+      });
+    } else {
+      bar.querySelector('#su-apply').addEventListener('click', () => {
+        location.href = buildFilterUrl(facetValue);
+      });
+    }
+
+    document.body.appendChild(bar);
+  }
+
+  // ── Floating banner (product pages) ──────────────────────────────────────────
 
   function removeBanner() {
     document.getElementById(BANNER_ID)?.remove();
   }
 
-  /**
-   * @param {{ icon: string, msg: string, sub?: string, actions?: Array }} opts
-   */
   function showBanner({ icon, msg, sub, actions }) {
     removeBanner();
     const el = document.createElement('div');
@@ -112,35 +216,108 @@
       </div>
       ${actions?.length ? `
         <div class="su-actions">
-          ${actions.map(a => `
-            <button class="su-btn ${a.primary ? 'su-primary' : 'su-secondary'}" data-id="${a.id}">
-              ${a.label}
-            </button>`).join('')}
+          ${actions.map(a => `<button class="su-btn ${a.primary ? 'su-primary' : 'su-secondary'}" data-id="${a.id}">${a.label}</button>`).join('')}
         </div>` : ''}
       <div class="su-brand">SizeUp</div>
     `;
-
     el.querySelector('.su-close').addEventListener('click', removeBanner);
-    actions?.forEach(a => {
-      el.querySelector(`[data-id="${a.id}"]`)?.addEventListener('click', a.onClick);
-    });
-
+    actions?.forEach(a => el.querySelector(`[data-id="${a.id}"]`)?.addEventListener('click', a.onClick));
     document.body.appendChild(el);
   }
 
-  // ── Highlights ──────────────────────────────────────────────────────────────
+  // ── Highlights ────────────────────────────────────────────────────────────────
 
   function clearHighlights() {
     document.querySelectorAll('.sizeup-match').forEach(el => el.classList.remove('sizeup-match'));
   }
 
-  // ── Site detection ──────────────────────────────────────────────────────────
+  function cleanup() {
+    removeBar();
+    removeBanner();
+    clearHighlights();
+  }
+
+  // ── Myntra size facet mapping ─────────────────────────────────────────────────
+
+  /**
+   * Detects the clothing category from the Myntra URL path.
+   * @returns {'top'|'bottom'|'shoe'}
+   */
+  function getMyntraCategory() {
+    const path = location.pathname.toLowerCase();
+    if (/shoe|sneaker|sandal|heel|loafer|boot|slipper|footwear|mule|clog|kolhapuri/i.test(path)) return 'shoe';
+    if (/jean|trouser|pant|short|jogger|chino|legging|skirt|bottom|cargo|track/i.test(path))     return 'bottom';
+    return 'top';
+  }
+
+  /**
+   * Maps profile measurements to the exact Myntra size_facet value for the page category.
+   *
+   * Tops    → alpha (XS / S / M / L / XL / XXL / 3XL / 4XL)
+   * Bottoms → numeric waist (28 / 30 / 32 / 34 / 36 / 38 / 40)
+   * Shoes   → IND-{uk} prefix Myntra uses (IND-6, IND-7 … IND-12)
+   *
+   * @param {Object} measurements
+   * @param {'top'|'bottom'|'shoe'} category
+   * @returns {{ sizeLabel: string, facetValue: string } | null}
+   */
+  function getMyntraSizeFacet(measurements, category) {
+    const sizes = deriveSizes(measurements);
+    switch (category) {
+      case 'top':
+        if (!sizes.top) return null;
+        return { sizeLabel: sizes.top.alpha, facetValue: sizes.top.alpha };
+
+      case 'bottom':
+        if (!sizes.bottom) return null;
+        return { sizeLabel: sizes.bottom.label, facetValue: sizes.bottom.label };
+
+      case 'shoe':
+        if (!sizes.shoe) return null;
+        return { sizeLabel: `UK ${sizes.shoe.uk}`, facetValue: `IND-${sizes.shoe.uk}` };
+    }
+    return null;
+  }
+
+  // ── URL filter helpers ────────────────────────────────────────────────────────
+
+  function buildFilterUrl(facetValue) {
+    const url = new URL(location.href);
+    const existing = url.searchParams.get('f') || '';
+    // Remove any prior size_facet, keep other active filters (brand, color, etc.)
+    const withoutSize = existing
+      .replace(/size_facet:[^|]*/gi, '')
+      .replace(/^\|+|\|+$/g, '')
+      .replace(/\|{2,}/g, '||');
+    url.searchParams.set('f', withoutSize ? `${withoutSize}||size_facet:${facetValue}` : `size_facet:${facetValue}`);
+    return url.toString();
+  }
+
+  function buildClearUrl() {
+    const url = new URL(location.href);
+    const existing = url.searchParams.get('f') || '';
+    const withoutSize = existing
+      .replace(/size_facet:[^|]*/gi, '')
+      .replace(/^\|+|\|+$/g, '')
+      .replace(/\|{2,}/g, '||');
+    if (withoutSize) url.searchParams.set('f', withoutSize);
+    else url.searchParams.delete('f');
+    return url.toString();
+  }
+
+  function getCurrentFacet() {
+    const f = new URL(location.href).searchParams.get('f') || '';
+    const m = f.match(/size_facet:([^|]+)/i);
+    return m ? m[1].trim() : null;
+  }
+
+  // ── Site detection ────────────────────────────────────────────────────────────
 
   const host = location.hostname;
 
   function site() {
-    if (host.includes('myntra.com'))  return 'myntra';
-    if (host.includes('amazon.in'))   return 'amazon';
+    if (host.includes('myntra.com'))   return 'myntra';
+    if (host.includes('amazon.in'))    return 'amazon';
     if (host.includes('flipkart.com')) return 'flipkart';
     return null;
   }
@@ -163,7 +340,7 @@
     return false;
   }
 
-  // ── Size element finders ────────────────────────────────────────────────────
+  // ── Size element finders ──────────────────────────────────────────────────────
 
   function findSizeElements() {
     switch (site()) {
@@ -171,16 +348,13 @@
         return document.querySelectorAll('.size-buttons-unified-size .size-buttons-size-button');
 
       case 'amazon': {
-        // Button tile grid (most clothing)
         const grid = document.querySelectorAll('#variation_size_name .a-button:not(.a-button-toggle)');
         if (grid.length) return grid;
-        // Native dropdown fallback
         const sel = document.querySelector('#native_dropdown_selected_size_name, #variation_size_name select');
         return sel ? sel.querySelectorAll('option:not([value=""])') : [];
       }
 
       case 'flipkart': {
-        // Try known class patterns; they change periodically
         const candidates = ['._1fGeJ1', '.dyC4hf', '._3ULzGw', '.itgGwcB'];
         for (const sel of candidates) {
           const els = document.querySelectorAll(sel);
@@ -192,7 +366,6 @@
     return [];
   }
 
-  /** Semantic fallback: find button-like elements near a "Size" label. */
   function fallbackSizeElements() {
     for (const el of document.querySelectorAll('*')) {
       if (el.children.length === 0 && /^size\s*:?\s*$/i.test(el.textContent.trim())) {
@@ -225,10 +398,10 @@
     return (el.querySelector('.a-button-text') || el).textContent.trim();
   }
 
-  // ── Page handlers ───────────────────────────────────────────────────────────
+  // ── Page handlers ─────────────────────────────────────────────────────────────
 
   async function handleProduct(profile) {
-    await delay(600); // let React/SPA render size options
+    await delay(600);
 
     const els = findSizeElements();
     if (!els.length) return;
@@ -245,13 +418,13 @@
       matchEl = el;
       available = !isUnavailable(el);
       el.classList.add('sizeup-match');
-      break; // highlight first match only
+      break;
     }
 
-    if (!matchEl) return; // not a standard-sized item
+    if (!matchEl) return;
 
     const sz = deriveSizes(profile.measurements || {});
-    const label = sz.top  ? `${sz.top.alpha} / ${sz.top.numeric}` :
+    const label = sz.top    ? `${sz.top.alpha} / ${sz.top.numeric}` :
                   sz.bottom ? sz.bottom.label :
                   sz.shoe   ? `UK ${sz.shoe.uk}` : '';
 
@@ -260,10 +433,7 @@
         icon: '🟢',
         msg: `${profile.name}'s size available`,
         sub: label ? `${label} · highlighted above` : 'Highlighted above',
-        actions: [{
-          id: 'sel', label: 'Select size', primary: true,
-          onClick: () => { matchEl.click(); removeBanner(); },
-        }],
+        actions: [{ id: 'sel', label: 'Select size', primary: true, onClick: () => { matchEl.click(); removeBanner(); } }],
       });
     } else {
       showBanner({
@@ -275,63 +445,40 @@
   }
 
   async function handleListing(profile) {
-    // URL-based size filter only works reliably on Myntra for MVP
     if (site() !== 'myntra') return;
 
-    const sz = deriveSizes(profile.measurements || {});
-    if (!sz.top) return;
+    const category = getMyntraCategory();
+    const mapped = getMyntraSizeFacet(profile.measurements || {}, category);
+    if (!mapped) return;
 
-    const alpha = sz.top.alpha;
-    const url = new URL(location.href);
-    const fParam = (url.searchParams.get('f') || '').toLowerCase();
+    const { sizeLabel, facetValue } = mapped;
+    const currentFacet = getCurrentFacet();
+    const isFiltered = currentFacet?.toLowerCase() === facetValue.toLowerCase();
 
-    // Already filtered for this size
-    if (fParam.includes(`size_facet:${alpha.toLowerCase()}`)) return;
-
-    const filtered = new URL(location.href);
-    filtered.searchParams.set('f', `size_facet:${alpha}`);
-
-    showBanner({
-      icon: '📐',
-      msg: `Filter for ${profile.name}?`,
-      sub: `Show only size ${alpha} products`,
-      actions: [
-        {
-          id: 'apply', label: `Show ${alpha} only`, primary: true,
-          onClick: () => { location.href = filtered.toString(); },
-        },
-        {
-          id: 'skip', label: 'Not now', primary: false,
-          onClick: removeBanner,
-        },
-      ],
-    });
+    showBar({ profile, sizeLabel, facetValue, isFiltered });
   }
 
-  // ── Learn-from-purchase ──────────────────────────────────────────────────────
+  // ── Learn-from-purchase ───────────────────────────────────────────────────────
 
-  /** Detects category from a set of size text labels. */
   function detectCategory(texts) {
     const n = texts.map(t => t.toLowerCase().trim());
-    if (n.some(t => /uk\s*\d/.test(t))) return 'shoe';
-    // Bottoms: all-numeric in typical waist range (24–44)
+    if (n.some(t => /uk\s*\d|ind-\d/i.test(t))) return 'shoe';
     if (n.length > 0 && n.every(t => /^\d{2}$/.test(t) && +t >= 24 && +t <= 44)) return 'bottom';
     return 'top';
   }
 
   async function handleLearnMode(learnData) {
-    if (!onProductPage()) return; // only act on product pages
+    if (!onProductPage()) return;
 
     await delay(800);
 
     const els = findSizeElements();
     if (!els.length) return;
 
-    // Collect only available sizes
     const available = [];
     for (const el of els) {
       const text = sizeText(el);
-      if (text && !isSizeUnavailable(el)) available.push(text);
+      if (text && !isUnavailable(el)) available.push(text);
     }
     if (!available.length) return;
 
@@ -379,27 +526,29 @@
     document.body.appendChild(el);
   }
 
-  // ── Init ────────────────────────────────────────────────────────────────────
+  // ── Init ──────────────────────────────────────────────────────────────────────
 
   async function init() {
     if (!site()) return;
 
-    // Learn-mode takes priority over regular filtering
     const data = await getStorageData();
     if (data.learnMode) {
+      injectStyles();
       await handleLearnMode(data.learnMode);
       return;
     }
 
     const profile = await getActiveProfile();
-    if (!profile) return;
+    if (!profile) { cleanup(); return; }
 
     injectStyles();
     clearHighlights();
 
     if (onProductPage()) {
+      removeBar();
       await handleProduct(profile);
     } else if (onListingPage()) {
+      removeBanner();
       await handleListing(profile);
     }
   }
@@ -413,19 +562,14 @@
   new MutationObserver(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
-      removeBanner();
-      clearHighlights();
+      cleanup();
       init();
     }
   }).observe(document.body, { subtree: true, childList: true });
 
   // Re-run when active profile changes from popup
   chrome.storage.onChanged.addListener(changes => {
-    if (changes[STORAGE_KEY]) {
-      removeBanner();
-      clearHighlights();
-      init();
-    }
+    if (changes[STORAGE_KEY]) { cleanup(); init(); }
   });
 
   init();
