@@ -1,0 +1,164 @@
+/**
+ * Size chart data and derivation utilities.
+ * All functions are globals — shared by content scripts and popup via script tag.
+ */
+
+/** Tops: chest cm → alpha + Indian numeric */
+const TOPS_CHART = [
+  { alpha: 'XS',  numeric: '36', min: 0,   max: 80  },
+  { alpha: 'S',   numeric: '38', min: 81,  max: 86  },
+  { alpha: 'M',   numeric: '40', min: 87,  max: 92  },
+  { alpha: 'L',   numeric: '42', min: 93,  max: 98  },
+  { alpha: 'XL',  numeric: '44', min: 99,  max: 104 },
+  { alpha: 'XXL', numeric: '46', min: 105, max: 110 },
+  { alpha: '3XL', numeric: '48', min: 111, max: 116 },
+  { alpha: '4XL', numeric: '50', min: 117, max: Infinity },
+];
+
+/** Bottoms: waist cm → numeric label */
+const BOTTOMS_CHART = [
+  { label: '26', min: 0,   max: 68  },
+  { label: '28', min: 69,  max: 73  },
+  { label: '30', min: 74,  max: 78  },
+  { label: '32', min: 79,  max: 83  },
+  { label: '34', min: 84,  max: 88  },
+  { label: '36', min: 89,  max: 93  },
+  { label: '38', min: 94,  max: 98  },
+  { label: '40', min: 99,  max: 103 },
+  { label: '42', min: 104, max: Infinity },
+];
+
+/**
+ * Shoe: foot length cm → UK / EU / US Men / US Women
+ * UK size used as canonical, others derived.
+ */
+const SHOE_CHART = [
+  { uk: '3',  eu: '36',    usM: '4',  usW: '5',  footLen: 22.3 },
+  { uk: '4',  eu: '37',    usM: '5',  usW: '6',  footLen: 23.0 },
+  { uk: '5',  eu: '38',    usM: '6',  usW: '7',  footLen: 23.7 },
+  { uk: '6',  eu: '39-40', usM: '7',  usW: '8',  footLen: 24.4 },
+  { uk: '7',  eu: '40-41', usM: '8',  usW: '9',  footLen: 25.1 },
+  { uk: '8',  eu: '42',    usM: '9',  usW: '10', footLen: 25.7 },
+  { uk: '9',  eu: '43',    usM: '10', usW: '11', footLen: 26.4 },
+  { uk: '10', eu: '44',    usM: '11', usW: '12', footLen: 27.1 },
+  { uk: '11', eu: '45',    usM: '12', usW: '13', footLen: 27.8 },
+  { uk: '12', eu: '46',    usM: '13', usW: '14', footLen: 28.5 },
+];
+
+function getTopSize(chestCm) {
+  if (!chestCm || chestCm <= 0) return null;
+  return TOPS_CHART.find(r => chestCm >= r.min && chestCm <= r.max) || TOPS_CHART[TOPS_CHART.length - 1];
+}
+
+function getBottomSize(waistCm) {
+  if (!waistCm || waistCm <= 0) return null;
+  return BOTTOMS_CHART.find(r => waistCm >= r.min && waistCm <= r.max) || BOTTOMS_CHART[BOTTOMS_CHART.length - 1];
+}
+
+function getShoeSize(footLenCm) {
+  if (!footLenCm || footLenCm <= 0) return null;
+  let closest = SHOE_CHART[0];
+  let minDiff = Infinity;
+  for (const entry of SHOE_CHART) {
+    const diff = Math.abs(entry.footLen - footLenCm);
+    if (diff < minDiff) { minDiff = diff; closest = entry; }
+  }
+  return closest;
+}
+
+/**
+ * Derives top, bottom, and shoe sizes from raw measurements.
+ * @param {Object} m - measurements object from profile
+ * @returns {{ top: Object|null, bottom: Object|null, shoe: Object|null }}
+ */
+function deriveSizes(m) {
+  return {
+    top: getTopSize(m.chest),
+    bottom: getBottomSize(m.waist),
+    shoe: getShoeSize(m.shoeLength),
+  };
+}
+
+/**
+ * Returns all normalized size strings a profile might appear as on a website.
+ * Used by content scripts to match against product size options.
+ * @param {Object} measurements
+ * @returns {string[]}
+ */
+function getSizeLabels(measurements) {
+  const { top, bottom, shoe } = deriveSizes(measurements);
+  const labels = new Set();
+
+  if (top) {
+    labels.add(top.alpha.toLowerCase());
+    labels.add(top.numeric);
+    // Common compound formats: "l/42", "42/l"
+    labels.add(`${top.alpha.toLowerCase()}/${top.numeric}`);
+    labels.add(`${top.numeric}/${top.alpha.toLowerCase()}`);
+  }
+  if (bottom) {
+    labels.add(bottom.label);
+  }
+  if (shoe) {
+    labels.add(`uk ${shoe.uk}`);
+    labels.add(`uk${shoe.uk}`);
+    labels.add(shoe.eu);
+    labels.add(`eu ${shoe.eu}`);
+    labels.add(`eu-${shoe.eu}`);
+    labels.add(`us ${shoe.usM}`);
+    labels.add(`ind ${shoe.uk}`);
+    labels.add(shoe.uk); // some Indian sites just show numeric
+  }
+
+  return [...labels].map(l => l.toLowerCase());
+}
+
+/**
+ * Returns the midpoint measurement (cm) for a given size label and category.
+ * Used to compute a suggested measurement when a user reports buying a specific size.
+ * @param {string} sizeLabel - e.g. "M", "42", "32", "UK 8"
+ * @param {'top'|'bottom'|'shoe'} category
+ * @returns {number|null} measurement in cm, or null if unrecognised
+ */
+function getSizeMidpoint(sizeLabel, category) {
+  const norm = sizeLabel.trim().toLowerCase();
+  if (category === 'top') {
+    const row = TOPS_CHART.find(r =>
+      r.alpha.toLowerCase() === norm || r.numeric === norm
+    );
+    if (!row) return null;
+    return row.max === Infinity ? row.min + 5 : (row.min + row.max) / 2;
+  }
+  if (category === 'bottom') {
+    const row = BOTTOMS_CHART.find(r => r.label === norm);
+    if (!row) return null;
+    return row.max === Infinity ? row.min + 5 : (row.min + row.max) / 2;
+  }
+  if (category === 'shoe') {
+    const row = SHOE_CHART.find(r =>
+      `uk ${r.uk}` === norm || `uk${r.uk}` === norm || r.uk === norm
+    );
+    return row ? row.footLen : null;
+  }
+  return null;
+}
+
+/** Maps category to the measurements key it should update. */
+const CATEGORY_FIELD = { top: 'chest', bottom: 'waist', shoe: 'shoeLength' };
+
+/**
+ * Returns true if a site's size string matches any of the profile's sizes.
+ * Handles partial matches, compound formats ("M/38"), and word boundaries.
+ * @param {string} siteSize
+ * @param {string[]} profileLabels - from getSizeLabels()
+ * @returns {boolean}
+ */
+function sizeMatches(siteSize, profileLabels) {
+  const norm = siteSize.toLowerCase().trim().replace(/\s+/g, ' ');
+  return profileLabels.some(label => {
+    if (norm === label) return true;
+    // Compound: "m/38" → check each segment
+    const parts = norm.split(/[\/\-,\s]/);
+    return parts.some(p => p.trim() === label);
+  });
+}

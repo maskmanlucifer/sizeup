@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SizeUp</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ── Home view ─────────────────────────────────────────────────────── -->
+  <div id="view-home" class="view">
+
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">S</div>
+        <span class="logo-text">SizeUp</span>
+      </div>
+    </header>
+
+    <div class="filter-bar">
+      <span class="filter-label">Filtering for</span>
+      <select id="profile-select" class="profile-select">
+        <option value="">None</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Family members</div>
+      <div id="members-list" class="members-list"></div>
+      <div id="empty-state" class="empty-state" hidden>
+        <div class="empty-icon">👕</div>
+        <p>No members yet</p>
+        <p class="muted">Add a family member to start<br>filtering by their sizes.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <button id="btn-add" class="btn btn-primary btn-full">+ Add family member</button>
+    </div>
+  </div>
+
+  <!-- ── Add / Edit view ───────────────────────────────────────────────── -->
+  <div id="view-form" class="view" hidden>
+
+    <header class="header header-form">
+      <button id="btn-back" class="btn-back">← Back</button>
+      <span id="form-title" class="form-header-title">Add member</span>
+    </header>
+
+    <div class="form-body">
+      <input type="hidden" id="field-id" />
+
+      <div class="field">
+        <label class="label" for="field-name">Name</label>
+        <input id="field-name" class="input" type="text" placeholder="e.g. Dad, Priya, Aryan…" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label class="label">Avatar</label>
+        <div class="emoji-picker" id="emoji-picker">
+          <button class="emoji-btn active" data-emoji="👨" type="button">👨</button>
+          <button class="emoji-btn" data-emoji="👩" type="button">👩</button>
+          <button class="emoji-btn" data-emoji="🧑" type="button">🧑</button>
+          <button class="emoji-btn" data-emoji="👦" type="button">👦</button>
+          <button class="emoji-btn" data-emoji="👧" type="button">👧</button>
+          <button class="emoji-btn" data-emoji="👴" type="button">👴</button>
+          <button class="emoji-btn" data-emoji="👵" type="button">👵</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Measurements <span class="muted">(cm)</span></label>
+        <div class="grid-2">
+          <div class="measure-item">
+            <span class="measure-label">Height</span>
+            <input id="field-height" class="input input-sm" type="number" placeholder="175" min="50" max="250" />
+          </div>
+          <div class="measure-item">
+            <span class="measure-label">Chest / Bust</span>
+            <input id="field-chest" class="input input-sm" type="number" placeholder="92" min="50" max="160" />
+          </div>
+          <div class="measure-item">
+            <span class="measure-label">Waist</span>
+            <input id="field-waist" class="input input-sm" type="number" placeholder="80" min="40" max="160" />
+          </div>
+          <div class="measure-item">
+            <span class="measure-label">Hip</span>
+            <input id="field-hip" class="input input-sm" type="number" placeholder="96" min="50" max="170" />
+          </div>
+          <div class="measure-item">
+            <span class="measure-label">Shoulder</span>
+            <input id="field-shoulder" class="input input-sm" type="number" placeholder="44" min="20" max="80" />
+          </div>
+          <div class="measure-item">
+            <span class="measure-label">Inseam</span>
+            <input id="field-inseam" class="input input-sm" type="number" placeholder="78" min="30" max="110" />
+          </div>
+        </div>
+
+        <div class="measure-item" style="margin-top:10px">
+          <span class="measure-label">Shoe (foot length in cm)</span>
+          <input id="field-shoeLength" class="input input-sm" type="number" step="0.5" placeholder="26.5" min="15" max="33" />
+        </div>
+      </div>
+
+      <!-- Learn from a purchase -->
+      <div class="field">
+        <label class="label">Learn from a purchase <span class="muted">(optional)</span></label>
+        <div class="learn-bar">
+          <input
+            id="field-learn-url"
+            class="input input-sm"
+            type="url"
+            placeholder="Paste Myntra / Amazon India / Flipkart product URL"
+          />
+          <button id="btn-learn" class="btn btn-secondary" type="button">Fetch</button>
+        </div>
+        <span id="learn-status" class="learn-status" hidden></span>
+      </div>
+
+      <!-- Live derived sizes preview -->
+      <div id="derived-box" class="derived-box" hidden>
+        <div class="derived-title">Your sizes</div>
+        <div id="derived-chips" class="derived-chips"></div>
+      </div>
+
+      <div class="form-actions">
+        <button id="btn-cancel" class="btn btn-secondary" type="button">Cancel</button>
+        <button id="btn-save" class="btn btn-primary" type="button">Save member</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Learned-size suggestion modal (shown on home view when a result is pending) -->
+  <div id="learn-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-icon">📦</span>
+        <span class="modal-title">Purchase size found</span>
+      </div>
+      <div id="learn-modal-body" class="modal-body"></div>
+      <div class="modal-actions">
+        <button id="btn-lm-skip"     class="btn btn-secondary">Skip</button>
+        <button id="btn-lm-average"  class="btn btn-secondary">Average</button>
+        <button id="btn-lm-override" class="btn btn-primary">Override</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../utils/size-charts.js"></script>
+  <script src="../utils/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

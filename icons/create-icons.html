@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SizeUp — Generate Icons</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 30px; background: #F9F8FF; color: #111; }
+    h2 { margin-bottom: 6px; }
+    p  { color: #6B7280; margin-bottom: 20px; font-size: 14px; }
+    .previews { display: flex; align-items: flex-end; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+    .preview-wrap { text-align: center; font-size: 12px; color: #6B7280; }
+    canvas { display: block; border-radius: 22%; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    button {
+      padding: 10px 24px; background: #5C35E8; color: white;
+      border: none; border-radius: 8px; font-size: 14px; cursor: pointer;
+    }
+    button:hover { background: #4526C9; }
+    .note { margin-top: 16px; font-size: 12px; color: #9CA3AF; }
+  </style>
+</head>
+<body>
+  <h2>SizeUp — Icon Generator</h2>
+  <p>Open this file in a browser once to generate the three required PNG icon files.</p>
+
+  <div class="previews" id="previews"></div>
+  <button onclick="downloadAll()">⬇ Download all icons</button>
+  <p class="note">Save icon16.png, icon48.png, icon128.png into the <code>icons/</code> folder.</p>
+
+  <script>
+    const SIZES = [16, 48, 128];
+
+    function drawIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const r = size * 0.18; // corner radius
+
+      // Background
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, r);
+      ctx.fillStyle = '#5C35E8';
+      ctx.fill();
+
+      // Letter "S"
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `bold ${size * 0.55}px -apple-system, system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('S', size / 2, size / 2 + size * 0.03);
+
+      return canvas;
+    }
+
+    function downloadAll() {
+      SIZES.forEach(size => {
+        const canvas = drawIcon(size);
+        const a = document.createElement('a');
+        a.download = `icon${size}.png`;
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+      });
+    }
+
+    // Render previews
+    const wrap = document.getElementById('previews');
+    SIZES.forEach(size => {
+      const canvas = drawIcon(size);
+      const div = document.createElement('div');
+      div.className = 'preview-wrap';
+      div.appendChild(canvas);
+      div.appendChild(document.createTextNode(`${size}×${size}`));
+      wrap.appendChild(div);
+    });
+  </script>
+</body>
+</html>
