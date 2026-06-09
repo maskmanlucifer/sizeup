@@ -65,7 +65,16 @@ const FlipkartPlatform = (() => {
   function isUnavailable(el) {
     if (el.style?.pointerEvents === 'none') return true;
     if (el.getAttribute('aria-disabled') === 'true') return true;
-    // Walk up 3 levels — Flipkart may place the OOS class on a parent container
+    // Flipkart renders OOS size swatches with a dashed border — most reliable signal
+    const computed = getComputedStyle(el);
+    if (computed.borderStyle === 'dashed' || computed.borderTopStyle === 'dashed') return true;
+    // Also check the first child div in case the border is on the inner container
+    const inner = el.firstElementChild;
+    if (inner) {
+      const ic = getComputedStyle(inner);
+      if (ic.borderStyle === 'dashed' || ic.borderTopStyle === 'dashed') return true;
+    }
+    // Walk up 3 levels for hashed OOS class names
     let node = el;
     for (let i = 0; i < 3 && node; i++, node = node.parentElement) {
       const cls = node.className || '';
