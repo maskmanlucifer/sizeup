@@ -2,66 +2,59 @@
 
 **Never check a size chart again.**
 
-SizeUp is a Chrome extension for Indian ecommerce shoppers. Store your family's clothing and shoe measurements once — the extension automatically highlights the right sizes and filters products on Myntra, Amazon India, and Flipkart.
+SizeUp is a Chrome extension for Indian shoppers. Add your family's measurements once — the extension automatically shows which sizes fit on Myntra, Amazon India, and Flipkart, and filters listing pages to show only products in your size.
 
 ---
 
-## Features
+## What it does
 
-- **Family profiles** — add multiple members (Dad, Mom, Kid…) each with their own measurements
-- **Live size derivation** — enter measurements in cm, see standard sizes (S/M/L, 38/40/42) computed instantly
-- **Product page** — your size is highlighted; a banner shows availability and lets you select it in one click
-- **Myntra listing pages** — suggests a URL filter to show only products in your size
-- **None mode** — switch to "None" in the popup to disable all filtering
-- All data stored **locally** — no account, no server, no tracking
+**On product pages** — a floating card shows fit status for every saved profile. Sizes are highlighted on the page. If a brand runs small or large, SizeUp shows "May fit" for adjacent sizes so you don't miss anything.
 
-## Supported Sites
+**On listing pages** — a filter bar lets you toggle which family members' sizes are active. Selecting multiple profiles shows products that fit any of them.
 
-| Site | Listing filter | Product highlight |
+---
+
+## Supported sites
+
+| | Listing filter | Product highlight |
 |---|---|---|
-| Myntra | ✅ URL param | ✅ |
+| Myntra | ✅ multi-select | ✅ |
+| Flipkart | ✅ multi-select | ✅ |
 | Amazon India | — | ✅ |
-| Flipkart | — | ✅ (best-effort) |
+
+Amazon listing filter is not supported — Amazon's size facet IDs are dynamic per category and have no universal URL format.
 
 ---
 
 ## Setup
 
-### 1. Generate icons
+1. Open `chrome://extensions` → enable **Developer mode**
+2. Click **Load unpacked** → select the `sizeup/` folder
+3. Pin the SizeUp icon to your toolbar
 
-Open `icons/create-icons.html` in any browser → click **Download all icons** → save `icon16.png`, `icon48.png`, `icon128.png` into the `icons/` folder.
-
-### 2. Load the extension
-
-1. Open Chrome → `chrome://extensions`
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked** → select this `sizeup/` folder
-
-Pin the SizeUp icon to your toolbar for easy access.
+No build step. No npm. Plain HTML/CSS/JS.
 
 ---
 
 ## Usage
 
 1. Click the SizeUp icon → **Add family member**
-2. Enter a name, pick an emoji, fill in measurements (all in cm)
-3. See derived sizes live as you type
-4. Use the **Shopping for** dropdown to activate a profile
-5. Browse Myntra / Amazon India / Flipkart — SizeUp handles the rest
+2. Enter a name, pick an emoji, fill in body measurements (all in cm)
+3. Sizes are derived live as you type
+4. Use the **Shopping for** dropdown to set the active profile
+5. Browse — SizeUp handles the rest
+
+Up to **10 profiles** per account. Profiles sync across Chrome devices via `chrome.storage.sync`.
 
 ---
 
-## Measurements guide
+## Size matching
 
-| Field | How to measure |
-|---|---|
-| Height | Top of head to floor |
-| Chest / Bust | Fullest part of chest, tape horizontal |
-| Waist | Narrowest part, ~2 cm above navel |
-| Hip | Fullest part of hips |
-| Shoulder | Shoulder seam to shoulder seam across upper back |
-| Inseam | Crotch to floor (inside leg) |
-| Inseam | Crotch to floor (inside leg) |
+SizeUp maps body measurements to standard Indian sizes (XS–4XL for tops, 26–42 for bottoms). When a product page loads:
+
+1. **Exact match** — profile's derived size is found on the page → "Fits"
+2. **Adjacent match** — size one band up or down is found → "May fit" (handles brand size variation)
+3. **Unlisted** — no matching size option exists → "Not offered"
 
 ---
 
@@ -69,57 +62,61 @@ Pin the SizeUp icon to your toolbar for easy access.
 
 ```
 sizeup/
-├── manifest.json            Chrome extension manifest (MV3)
+├── manifest.json
 ├── popup/
-│   ├── popup.html           Extension popup UI
+│   ├── popup.html
 │   ├── popup.css
 │   └── popup.js
 ├── content/
-│   └── content.js           Injected into Myntra, Amazon IN, Flipkart
+│   ├── content.js          Orchestrator — init, SPA detection, page handlers
+│   ├── ui.js               Listing bar + product banner rendering
+│   └── platforms/
+│       ├── myntra.js        Myntra adapter
+│       ├── flipkart.js      Flipkart adapter
+│       └── amazon.js        Amazon India adapter
 ├── background/
 │   └── service_worker.js
 ├── utils/
-│   ├── storage.js           chrome.storage helpers + learn-mode state
-│   └── size-charts.js       Measurement → size derivation + midpoints
-├── icons/
-│   ├── create-icons.html    Run once in browser to generate PNG icons
-│   ├── icon16.png           (gitignored — generate locally)
-│   ├── icon48.png
-│   └── icon128.png
-└── README.md
+│   ├── storage.js           chrome.storage.sync helpers
+│   └── size-charts.js       Measurement → size derivation + adjacent matching
+└── icons/
 ```
 
-No build step. No dependencies. Plain HTML/CSS/JS.
+Each platform adapter exposes the same interface:
+`onProductPage`, `onListingPage`, `findSizeElements`, `isUnavailable`, `sizeText`, `getSizeFacet`, `getCurrentFilters`, `buildFilterUrl`
+
+---
+
+## What's been added
+
+- **Multi-profile listing filter** — toggle multiple family members' sizes simultaneously
+- **Adjacent size matching** — "May fit" for ±1 size band handles brand variation automatically
+- **Flipkart listing filter** — `p[]=facets.size[]=L` URL format, fully multi-select
+- **Platform adapters** — clean separation of all site-specific logic
+- **Cross-device sync** — profiles stored in `chrome.storage.sync`
+- **Platform size chips** — popup shows per-platform sizes for each member card
+
+---
+
+## Planned
+
+- Amazon India listing filter (requires per-category facet ID discovery)
+- Brand-specific size overrides ("I'm L in Puma but M in H&M")
+- Learn from a purchase — suggest measurement updates based on what you bought
+- Kids / age-based size profiles
+- Shoe half-size support
 
 ---
 
 ## Contributing
 
-Pull requests are welcome. Before opening one:
+PRs welcome. A few things to keep in mind:
 
-1. **Fork** the repo and create a branch: `git checkout -b feat/your-feature`
-2. **Keep it vanilla** — no bundlers, no npm packages unless there's a strong reason. The extension loads files directly.
-3. **Test on all three sites** before submitting — Myntra, Amazon India, Flipkart.
-4. **Site selectors change** — if you're updating DOM selectors for a site, note in the PR which page and date you tested against.
-5. **Measurements** — if you're adjusting the size chart data in `utils/size-charts.js`, link a source (brand size guide, IS standard, etc.).
-
-### Good first issues
-
-- Add Flipkart listing page URL filter
-- Add Amazon India listing page filter
-- Brand-specific size overrides (e.g. "I'm L in Puma but M in H&M")
-- Kids / age-based size profiles
-- Shoe half-size support
-- Remote selector config so site selectors can update without an extension release
-
----
-
-## Planned / coming soon
-
-- **Learn from a purchase** — paste a product URL you've bought; pick the size you got; SizeUp suggests updating your measurements automatically
-- Flipkart and Amazon listing page filters (currently product-highlight only)
-- Brand-specific size overrides
-- Kids / age-based profiles
+1. **No bundlers** — the extension loads files directly. Keep it plain JS.
+2. **Test on all three sites** before submitting — note the date you tested against since selectors change.
+3. **Adding a platform** — create `content/platforms/<name>.js` implementing the platform interface, register it in `content/content.js`, add it to `content_scripts` in `manifest.json`.
+4. **Size chart changes** — link a source (brand guide, IS standard, etc.) in the PR.
+5. **Flipkart selectors** — Flipkart hashes CSS class names on every deploy. Prefer heuristics (DOM structure, `aria-*`, text content) over class names.
 
 ---
 
