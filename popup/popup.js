@@ -29,6 +29,15 @@ const ICON_DELETE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
   <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
 </svg>`;
 
+const ICON_COPY = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+</svg>`;
+
+const ICON_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="20 6 9 17 4 12"/>
+</svg>`;
+
 // ── State ─────────────────────────────────────────────────────────────────────
 
 let editingId     = null;
@@ -90,11 +99,13 @@ function buildMemberCard(profile) {
       ${platforms ? `<div class="member-platforms">${platforms}</div>` : ''}
     </div>
     <div class="member-actions">
+      <button class="btn-icon" data-action="copy"   title="Copy sizes for AI">${ICON_COPY}</button>
       <button class="btn-icon" data-action="edit"   title="Edit">${ICON_EDIT}</button>
       <button class="btn-icon danger" data-action="delete" title="Remove">${ICON_DELETE}</button>
     </div>
   `;
 
+  card.querySelector('[data-action="copy"]').addEventListener('click', () => copyProfilePrompt(profile, card));
   card.querySelector('[data-action="edit"]').addEventListener('click', () => showForm(profile));
   card.querySelector('[data-action="delete"]').addEventListener('click', () => showInlineConfirm(card, profile.id));
   return card;
@@ -257,6 +268,52 @@ function showInlineConfirm(card, id) {
   actions.querySelector('.btn-inline-ok').addEventListener('click', () => {
     deleteProfile(id).then(renderHome);
   });
+}
+
+// ── Copy prompt ───────────────────────────────────────────────────────────────
+
+/**
+ * Builds a Gemini/ChatGPT-ready prompt with the profile's measurements and
+ * derived sizes, then copies it to the clipboard. The button briefly shows a
+ * checkmark to confirm the copy.
+ */
+function copyProfilePrompt(profile, card) {
+  const m   = profile.measurements || {};
+  const sz  = deriveSizes(m);
+  const prompt = _buildPrompt(profile.name, m, sz);
+
+  navigator.clipboard.writeText(prompt).then(() => {
+    const btn = card.querySelector('[data-action="copy"]');
+    btn.innerHTML = ICON_CHECK;
+    btn.style.color = 'var(--green)';
+    setTimeout(() => {
+      btn.innerHTML = ICON_COPY;
+      btn.style.color = '';
+    }, 1500);
+  });
+}
+
+function _buildPrompt(name, m, sz) {
+  const lines = [`I'm shopping online for ${name}. Here are the body measurements:`];
+
+  const measurements = [];
+  if (m.height)   measurements.push(`Height: ${m.height} cm`);
+  if (m.chest)    measurements.push(`Chest: ${m.chest} cm`);
+  if (m.waist)    measurements.push(`Waist: ${m.waist} cm`);
+  if (m.hip)      measurements.push(`Hip: ${m.hip} cm`);
+  if (m.shoulder) measurements.push(`Shoulder: ${m.shoulder} cm`);
+  if (m.inseam)   measurements.push(`Inseam: ${m.inseam} cm`);
+  if (measurements.length) lines.push(measurements.join(' | '));
+
+  lines.push('');
+  lines.push('Usual sizes on Indian platforms:');
+  if (sz.top)    lines.push(`- Tops: ${sz.top.alpha} (Indian numeric ${sz.top.numeric}) — works on Myntra, Flipkart, Amazon India`);
+  if (sz.bottom) lines.push(`- Bottoms: Waist ${sz.bottom.label}`);
+  if (sz.shoe)   lines.push(`- Shoes: UK ${sz.shoe.uk} / EU ${sz.shoe.eu}`);
+
+  lines.push('');
+  lines.push('What size should I pick on [paste the website/brand name here]?');
+  return lines.join('\n');
 }
 
 // ── Listeners ─────────────────────────────────────────────────────────────────
