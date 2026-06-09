@@ -79,7 +79,7 @@
             <span class="info-tooltip">Body measurements, not clothing label sizes</span>
           </span>
         </label>
-        <div class="mrows">
+        <div class="mrows" id="mrows">
           <div class="mrow">
             <span class="mrow-label">Height</span>
             <input id="field-height" class="mrow-input" type="number" placeholder="175" min="50" max="250" />
@@ -119,7 +119,7 @@
           <span id="preview-emoji" class="preview-emoji">🌸</span>
           <div class="derived-info">
             <div id="derived-sizes-text" class="derived-main"></div>
-            <div class="derived-hint">L = international · 42 = Indian numeric</div>
+            <div class="derived-hint">L = international &nbsp;·&nbsp; 42 = Indian numeric</div>
           </div>
         </div>
       </div>
@@ -127,38 +127,12 @@
       <!-- Warn box -->
       <div id="measure-warn" class="warn-box" hidden></div>
 
-      <!-- Learn from purchase -->
-      <div class="field">
-        <label class="label">Learn from a purchase <span class="muted">(optional)</span></label>
-        <div class="learn-bar">
-          <input id="field-learn-url" class="input input-sm" type="url" placeholder="Paste Myntra / Amazon / Flipkart product URL" />
-          <button id="btn-learn" class="btn btn-secondary" type="button">Fetch</button>
-        </div>
-        <span id="learn-status" class="learn-status" hidden></span>
-      </div>
-
       <div class="form-actions">
         <button id="btn-cancel" class="btn btn-secondary" type="button">Cancel</button>
         <button id="btn-save" class="btn btn-primary" type="button">Save</button>
       </div>
     </div>
 
-  </div>
-
-  <!-- ── Learned-size modal ─────────────────────────────────────────────── -->
-  <div id="learn-modal" class="modal-overlay" hidden>
-    <div class="modal">
-      <div class="modal-header">
-        <span class="modal-icon">📦</span>
-        <span class="modal-title">Purchase size found</span>
-      </div>
-      <div id="learn-modal-body" class="modal-body"></div>
-      <div class="modal-actions">
-        <button id="btn-lm-skip"     class="btn btn-secondary">Skip</button>
-        <button id="btn-lm-average"  class="btn btn-secondary">Average</button>
-        <button id="btn-lm-override" class="btn btn-primary">Override</button>
-      </div>
-    </div>
   </div>
 
   <script src="../utils/size-charts.js"></script>

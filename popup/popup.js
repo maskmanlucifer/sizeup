@@ -34,7 +34,6 @@ let selectedEmoji = '🌸';
 
 async function boot() {
   attachListeners();
-  await checkForLearned();
   await renderHome();
 }
 
@@ -60,9 +59,7 @@ async function renderHome() {
   } else {
     emptyState.hidden = true;
     membersList.hidden = false;
-    for (const p of profiles) {
-      membersList.appendChild(buildMemberCard(p));
-    }
+    for (const p of profiles) membersList.appendChild(buildMemberCard(p));
   }
 }
 
@@ -70,7 +67,7 @@ function buildMemberCard(profile) {
   const card = document.createElement('div');
   card.className = 'member-card';
 
-  const sz = deriveSizes(profile.measurements || {});
+  const sz       = deriveSizes(profile.measurements || {});
   const sizeLine = buildSizeLine(sz);
 
   card.innerHTML = `
@@ -90,7 +87,6 @@ function buildMemberCard(profile) {
   return card;
 }
 
-/** Builds the one-line size summary shown on member cards. */
 function buildSizeLine(sizes) {
   const parts = [];
   if (sizes.top)    parts.push(`<strong>${sizes.top.alpha} · ${sizes.top.numeric}</strong>`);
@@ -119,7 +115,6 @@ function showForm(profile = null) {
   });
 
   refreshDerived();
-
   viewHome.hidden = true;
   viewForm.hidden = false;
 }
@@ -137,7 +132,7 @@ function refreshDerived() {
   const m = readMeasurements();
   refreshWarning(m);
 
-  const sizes = deriveSizes(m);
+  const sizes  = deriveSizes(m);
   const hasAny = sizes.top || sizes.bottom;
 
   derivedBox.hidden = !hasAny;
@@ -175,11 +170,10 @@ function readMeasurements() {
 
 async function handleSave() {
   const nameEl = document.getElementById('field-name');
-  const name = nameEl.value.trim();
+  const name   = nameEl.value.trim();
   if (!name) { nameEl.focus(); return; }
 
   const isNew = !editingId;
-
   const profile = {
     id: editingId || generateId(),
     name,
@@ -188,9 +182,7 @@ async function handleSave() {
   };
 
   await saveProfile(profile);
-
   if (isNew) fireConfetti();
-
   showHome();
 }
 
@@ -200,7 +192,7 @@ async function handleDelete(id, name) {
   renderHome();
 }
 
-// ── Confetti (lazy-loaded from CDN, zero bundle cost) ─────────────────────────
+// ── Confetti (lazy CDN, zero bundle cost) ─────────────────────────────────────
 
 async function fireConfetti() {
   try {
@@ -214,116 +206,7 @@ async function fireConfetti() {
       });
     }
     window.confetti({ particleCount: 100, spread: 65, origin: { y: 0.7 } });
-  } catch (_) {
-    // CDN unavailable — silently skip confetti
-  }
-}
-
-// ── Learn-from-purchase ───────────────────────────────────────────────────────
-
-const SUPPORTED_LEARN_HOSTS = ['www.myntra.com', 'www.amazon.in', 'www.flipkart.com'];
-
-async function handleLearnFetch() {
-  const input    = document.getElementById('field-learn-url');
-  const statusEl = document.getElementById('learn-status');
-  const url      = input.value.trim();
-
-  statusEl.hidden = false;
-  statusEl.className = 'learn-status';
-
-  if (!url) { statusEl.textContent = 'Paste a product URL first.'; return; }
-
-  let parsed;
-  try { parsed = new URL(url); } catch {
-    statusEl.textContent = 'Not a valid URL.';
-    statusEl.classList.add('err');
-    return;
-  }
-
-  if (!SUPPORTED_LEARN_HOSTS.includes(parsed.hostname)) {
-    statusEl.textContent = 'Only Myntra, Amazon India, and Flipkart URLs are supported.';
-    statusEl.classList.add('err');
-    return;
-  }
-
-  // Auto-save the profile so we have an ID — name is the only hard requirement
-  const nameEl = document.getElementById('field-name');
-  const name   = nameEl.value.trim();
-  if (!name) {
-    nameEl.focus();
-    statusEl.textContent = 'Add a name first so we know who this size belongs to.';
-    statusEl.classList.add('err');
-    return;
-  }
-
-  const profileId = document.getElementById('field-id').value || generateId();
-  document.getElementById('field-id').value = profileId;
-
-  await saveProfile({
-    id: profileId,
-    name,
-    emoji: selectedEmoji,
-    measurements: readMeasurements(),
-  });
-
-  await setLearnMode(profileId);
-  chrome.tabs.create({ url });
-  statusEl.textContent = '✓ Opening page — pick your size there, then come back.';
-  statusEl.classList.add('ok');
-}
-
-async function checkForLearned() {
-  const data = await getStorageData();
-  if (!data.learnedResult) return;
-  showLearnModal(data.learnedResult, data.profiles);
-}
-
-function showLearnModal(result, profiles) {
-  const modal   = document.getElementById('learn-modal');
-  const body    = document.getElementById('learn-modal-body');
-  const profile = profiles.find(p => p.id === result.profileId);
-  if (!profile) { clearLearned(); return; }
-
-  const catLabel  = { top: 'Tops', bottom: 'Bottoms', shoe: 'Shoes' }[result.category] || result.category;
-  const midpoint  = getSizeMidpoint(result.size, result.category);
-  const field     = CATEGORY_FIELD[result.category];
-  const existing  = (profile.measurements || {})[field];
-  const hasExisting = existing != null && existing > 0;
-  const avgValue  = hasExisting && midpoint ? ((existing + midpoint) / 2).toFixed(1) : null;
-
-  body.innerHTML = `
-    <strong>${profile.emoji} ${esc(profile.name)}</strong> bought size
-    <strong>${esc(result.size)}</strong> in <strong>${catLabel}</strong>.
-    <div class="modal-sub">
-      ${hasExisting
-        ? `Current ${field}: <strong>${existing} cm</strong>.
-           ${midpoint ? `Midpoint for ${result.size}: <strong>${midpoint} cm</strong>.` : ''}
-           ${avgValue ? `Average: <strong>${avgValue} cm</strong>.` : ''}`
-        : midpoint
-          ? `No ${field} stored. Override sets it to <strong>${midpoint} cm</strong>.`
-          : `No measurement to compute — skip or update manually.`
-      }
-    </div>
-  `;
-
-  document.getElementById('btn-lm-average').disabled = !avgValue;
-  modal.hidden = false;
-
-  document.getElementById('btn-lm-skip').onclick = async () => {
-    await clearLearned(); modal.hidden = true;
-  };
-  document.getElementById('btn-lm-average').onclick = async () => {
-    if (!avgValue || !field) return;
-    const updated = { ...(profile.measurements || {}), [field]: parseFloat(avgValue) };
-    await saveProfile({ ...profile, measurements: updated });
-    await clearLearned(); modal.hidden = true; renderHome();
-  };
-  document.getElementById('btn-lm-override').onclick = async () => {
-    if (!midpoint || !field) { await clearLearned(); modal.hidden = true; return; }
-    const updated = { ...(profile.measurements || {}), [field]: midpoint };
-    await saveProfile({ ...profile, measurements: updated });
-    await clearLearned(); modal.hidden = true; renderHome();
-  };
+  } catch (_) { /* CDN unavailable — skip silently */ }
 }
 
 // ── Listeners ─────────────────────────────────────────────────────────────────
@@ -351,7 +234,6 @@ function attachListeners() {
     document.getElementById(id).addEventListener('input', refreshDerived);
   });
 
-  document.getElementById('btn-learn').addEventListener('click', handleLearnFetch);
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
