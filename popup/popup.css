@@ -188,7 +188,48 @@ body {
 
 .label { font-size: 12px; font-weight: 600; }
 
-.field-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+/* ── Info icon + tooltip ─────────────────────────────────────────────────── */
+.info-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  color: var(--muted);
+  cursor: default;
+  vertical-align: middle;
+}
+
+.info-icon svg { display: block; }
+
+.info-tooltip {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: #1C1B1F;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+  padding: 5px 9px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 99;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.info-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #1C1B1F;
+}
+
+.info-icon:hover .info-tooltip,
+.info-icon:focus .info-tooltip { display: block; }
 
 .input {
   height: 36px; padding: 0 10px;
