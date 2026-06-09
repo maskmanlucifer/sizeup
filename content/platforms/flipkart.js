@@ -27,10 +27,16 @@ const FlipkartPlatform = (() => {
   // ── Product page ────────────────────────────────────────────────────────────
 
   /**
-   * Flipkart renders size swatches as `<a>` tags with hashed class names.
-   * We try known selectors first, then fall back to DOM heuristics.
+   * Flipkart renders size swatches as `<a>` tags.
+   * Primary selector targets the stable `swatchAttr=size` href parameter.
+   * Falls back to known hashed class names then DOM heuristics.
    */
   function findSizeElements() {
+    // Stable semantic selector — Flipkart always puts swatchAttr=size on size links
+    const byHref = document.querySelectorAll('a[href*="swatchAttr=size"]');
+    if (byHref.length && byHref.length < 25) return byHref;
+
+    // Legacy hashed selectors (deploy-specific, kept as secondary)
     const KNOWN = ['._1fGeJ1', '.dyC4hf', '._3ULzGw', '.itgGwcB', '[class*="size-swatch"]', '[class*="sizeSelector"]'];
     for (const sel of KNOWN) {
       const els = document.querySelectorAll(sel);
@@ -39,14 +45,17 @@ const FlipkartPlatform = (() => {
     return _fallbackSizeElements();
   }
 
-  /** Walks the DOM for an element whose text is exactly "Size" and collects its siblings. */
+  /**
+   * DOM heuristic: find a "size" or "select size" label element and collect
+   * the adjacent clickable elements in its container.
+   */
   function _fallbackSizeElements() {
     for (const el of document.querySelectorAll('*')) {
-      if (el.children.length === 0 && /^size\s*:?\s*$/i.test(el.textContent.trim())) {
-        const section = el.closest('section, [class]') || el.parentElement?.parentElement;
-        if (section) {
-          const btns = section.querySelectorAll('a, button, [role="button"]');
-          if (btns.length > 0 && btns.length < 25) return btns;
+      if (el.children.length === 0 && /^(select\s+)?size\s*:?\s*$/i.test(el.textContent.trim())) {
+        let container = el.parentElement;
+        for (let i = 0; i < 4 && container; i++, container = container.parentElement) {
+          const btns = container.querySelectorAll('a, button, [role="button"]');
+          if (btns.length > 1 && btns.length < 25) return btns;
         }
       }
     }
@@ -55,18 +64,32 @@ const FlipkartPlatform = (() => {
 
   function isUnavailable(el) {
     const cls = (el.className || '') + ' ' + (el.parentElement?.className || '');
-    return cls.includes('_3f2I3K') ||
-           el.style?.pointerEvents === 'none' ||
-           el.getAttribute('aria-disabled') === 'true';
+    if (cls.includes('_3f2I3K')) return true;
+    if (el.style?.pointerEvents === 'none') return true;
+    if (el.getAttribute('aria-disabled') === 'true') return true;
+    // swatchAttr-based elements: out-of-stock text uses grey colour (#707070)
+    const textDiv = el.querySelector('div[style*="color"]');
+    if (textDiv) {
+      const c = textDiv.style.color || '';
+      if (c.includes('707070') || c.includes('9e9e9e') || c.includes('bdbdbd')) return true;
+    }
+    return false;
   }
 
   /** Returns only the size label, ignoring any "Out of Stock" sub-text. */
   function sizeText(el) {
+    // Direct text node first (legacy structure)
     for (const node of el.childNodes) {
       if (node.nodeType === Node.TEXT_NODE) {
         const t = node.textContent.trim();
         if (t) return t;
       }
+    }
+    // For swatchAttr <a> elements: size text is in innermost div, e.g. <a><div><div>M</div></div></a>
+    const leaf = el.querySelector('div > div, span');
+    if (leaf) {
+      const t = leaf.textContent.trim().split('\n')[0].trim();
+      if (t) return t;
     }
     return el.textContent.trim().split('\n')[0].trim();
   }

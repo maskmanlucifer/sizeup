@@ -41,9 +41,17 @@
    * @param {Object[]} allProfiles - all profiles to display
    */
   async function handleProduct(profile, allProfiles) {
-    await _delay(900);
+    // Amazon renders its size twister late — give it extra time
     const platform = getPlatform();
-    const els      = platform.findSizeElements();
+    const isAmazon = location.hostname.includes('amazon');
+    await _delay(isAmazon ? 1500 : 900);
+
+    let els = platform.findSizeElements();
+    // One retry for pages that render size widgets slowly
+    if (!els.length) {
+      await _delay(800);
+      els = platform.findSizeElements();
+    }
     if (!els.length) return;
 
     const results = allProfiles.map(p => {
@@ -69,7 +77,7 @@
         const text = platform.sizeText(el);
         if (!text || !sizeMatches(text, adjacent)) continue;
         const avail = !platform.isUnavailable(el);
-        return { profile: p, status: avail ? 'avail' : 'unavail', matchType: 'adjacent', szLabel };
+        return { profile: p, status: avail ? 'avail' : 'unavail', matchType: 'adjacent', szLabel, matchedSize: text.toUpperCase() };
       }
 
       return { profile: p, status: 'unlisted', matchType: 'exact', szLabel };

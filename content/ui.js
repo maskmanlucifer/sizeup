@@ -230,7 +230,7 @@ const SizeUpUI = (() => {
 
     const cards = results.map(r => {
       const tagClass = r.status === 'avail' && r.matchType === 'adjacent' ? 'adjacent' : r.status;
-      const tagText  = _tagLabel(r.status, r.matchType);
+      const tagText  = _tagLabel(r.status, r.matchType, r.matchedSize);
       return `
         <div class="su-bpc">
           <span class="su-bpc-dot ${r.status}"></span>
@@ -267,12 +267,14 @@ const SizeUpUI = (() => {
   /**
    * @param {'avail'|'unavail'|'unlisted'} status
    * @param {'exact'|'adjacent'} matchType
+   * @param {string} [matchedSize] - the size label found on the page (adjacent only)
    * @returns {string}
    */
-  function _tagLabel(status, matchType) {
+  function _tagLabel(status, matchType, matchedSize) {
     if (status === 'unlisted') return 'Not offered';
     if (status === 'unavail')  return 'Out of stock';
-    return matchType === 'adjacent' ? 'May fit' : 'Fits';
+    if (matchType === 'adjacent') return matchedSize ? `May fit (${matchedSize})` : 'May fit';
+    return 'Fits';
   }
 
   // ── Highlights ──────────────────────────────────────────────────────────────

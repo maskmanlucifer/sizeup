@@ -19,21 +19,30 @@ const AmazonPlatform = (() => {
   // ── Product page ────────────────────────────────────────────────────────────
 
   /**
-   * Amazon renders sizes in two ways depending on the seller:
-   * 1. Button grid — `#variation_size_name .a-button` elements
-   * 2. Native dropdown — `#native_dropdown_selected_size_name select`
+   * Amazon renders sizes in multiple ways depending on the listing type.
+   * Tries button grids (twister/variation) first, then dropdown selects.
    */
   function findSizeElements() {
-    // Try the "twister" inline button variant first (most clothing listings)
-    const twister = document.querySelectorAll(
-      '#variation_size_name .a-button:not(.a-button-toggle), ' +
-      '#inline-twister-row-size_name .a-button:not(.a-button-toggle)'
+    // Inline twister — newer Amazon UI (most clothing on Amazon India)
+    const tileContainers = document.querySelectorAll(
+      '[id*="inline-twister"][id*="size"] .a-button:not(.a-button-toggle), ' +
+      '[data-a-input-name="size_name"] .a-button:not(.a-button-toggle), ' +
+      '[data-a-input-name="size"] .a-button:not(.a-button-toggle)'
     );
-    if (twister.length) return twister;
+    if (tileContainers.length) return tileContainers;
 
-    // Fall back to native select dropdown
+    // Classic variation grid
+    const classic = document.querySelectorAll(
+      '#variation_size_name .a-button:not(.a-button-toggle), ' +
+      '[id*="variation_size"] .a-button:not(.a-button-toggle)'
+    );
+    if (classic.length) return classic;
+
+    // Native select dropdown fallback
     const sel = document.querySelector(
-      '#native_dropdown_selected_size_name, #variation_size_name select'
+      '#native_dropdown_selected_size_name, ' +
+      '#variation_size_name select, ' +
+      '[id*="variation_size"] select'
     );
     return sel ? sel.querySelectorAll('option:not([value=""])') : [];
   }
