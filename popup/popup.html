@@ -19,7 +19,7 @@
     </header>
 
     <div class="filter-bar">
-      <span class="filter-label">Filtering for</span>
+      <span class="filter-label">Shopping for</span>
       <select id="profile-select" class="profile-select">
         <option value="">None</option>
       </select>
@@ -31,7 +31,7 @@
       <div id="empty-state" class="empty-state" hidden>
         <div class="empty-icon">👕</div>
         <p>No members yet</p>
-        <p class="muted">Add a family member to start<br>filtering by their sizes.</p>
+        <p class="muted">Add someone to start filtering by their size.</p>
       </div>
     </div>
 
@@ -51,90 +51,102 @@
     <div class="form-body">
       <input type="hidden" id="field-id" />
 
+      <!-- Name -->
       <div class="field">
         <label class="label" for="field-name">Name</label>
         <input id="field-name" class="input" type="text" placeholder="e.g. Dad, Priya, Aryan…" autocomplete="off" />
       </div>
 
+      <!-- Avatar -->
       <div class="field">
         <label class="label">Avatar</label>
         <div class="emoji-picker" id="emoji-picker">
-          <button class="emoji-btn active" data-emoji="👨" type="button">👨</button>
-          <button class="emoji-btn" data-emoji="👩" type="button">👩</button>
-          <button class="emoji-btn" data-emoji="🧑" type="button">🧑</button>
-          <button class="emoji-btn" data-emoji="👦" type="button">👦</button>
-          <button class="emoji-btn" data-emoji="👧" type="button">👧</button>
-          <button class="emoji-btn" data-emoji="👴" type="button">👴</button>
-          <button class="emoji-btn" data-emoji="👵" type="button">👵</button>
+          <button class="emoji-btn active" data-emoji="🌸" type="button">🌸</button>
+          <button class="emoji-btn" data-emoji="🦋" type="button">🦋</button>
+          <button class="emoji-btn" data-emoji="⭐" type="button">⭐</button>
+          <button class="emoji-btn" data-emoji="🌊" type="button">🌊</button>
+          <button class="emoji-btn" data-emoji="🔥" type="button">🔥</button>
+          <button class="emoji-btn" data-emoji="🚀" type="button">🚀</button>
+          <button class="emoji-btn" data-emoji="🎨" type="button">🎨</button>
+          <button class="emoji-btn" data-emoji="🌵" type="button">🌵</button>
+          <button class="emoji-btn" data-emoji="🦊" type="button">🦊</button>
+          <button class="emoji-btn" data-emoji="💎" type="button">💎</button>
+          <button class="emoji-btn" data-emoji="🍀" type="button">🍀</button>
+          <button class="emoji-btn" data-emoji="🌙" type="button">🌙</button>
         </div>
       </div>
 
+      <!-- Measurements -->
       <div class="field">
-        <label class="label">Body measurements <span class="muted">(cm, not clothing sizes)</span></label>
-        <p class="measure-hint">Use a tape measure on the body — not clothing labels.<br>e.g. chest 96 cm = shirt size M / 40.</p>
-        <div class="grid-2">
-          <div class="measure-item">
-            <span class="measure-label">Height</span>
-            <input id="field-height" class="input input-sm" type="number" placeholder="175" min="50" max="250" />
+        <label class="label">Measurements</label>
+        <div class="mrows">
+          <div class="mrow">
+            <span class="mrow-label">Height</span>
+            <input id="field-height" class="mrow-input" type="number" placeholder="175" min="50" max="250" />
+            <span class="mrow-unit">cm</span>
           </div>
-          <div class="measure-item">
-            <span class="measure-label">Chest / Bust</span>
-            <input id="field-chest" class="input input-sm" type="number" placeholder="92" min="50" max="160" />
+          <div class="mrow">
+            <span class="mrow-label">Chest</span>
+            <input id="field-chest" class="mrow-input" type="number" placeholder="96" min="50" max="160" />
+            <span class="mrow-unit">cm</span>
           </div>
-          <div class="measure-item">
-            <span class="measure-label">Waist</span>
-            <input id="field-waist" class="input input-sm" type="number" placeholder="80" min="40" max="160" />
+          <div class="mrow">
+            <span class="mrow-label">Waist</span>
+            <input id="field-waist" class="mrow-input" type="number" placeholder="80" min="40" max="160" />
+            <span class="mrow-unit">cm</span>
           </div>
-          <div class="measure-item">
-            <span class="measure-label">Hip</span>
-            <input id="field-hip" class="input input-sm" type="number" placeholder="96" min="50" max="170" />
+          <div class="mrow">
+            <span class="mrow-label">Hip</span>
+            <input id="field-hip" class="mrow-input" type="number" placeholder="96" min="50" max="170" />
+            <span class="mrow-unit">cm</span>
           </div>
-          <div class="measure-item">
-            <span class="measure-label">Shoulder</span>
-            <input id="field-shoulder" class="input input-sm" type="number" placeholder="44" min="20" max="80" />
+          <div class="mrow">
+            <span class="mrow-label">Shoulder</span>
+            <input id="field-shoulder" class="mrow-input" type="number" placeholder="44" min="20" max="80" />
+            <span class="mrow-unit">cm</span>
           </div>
-          <div class="measure-item">
-            <span class="measure-label">Inseam</span>
-            <input id="field-inseam" class="input input-sm" type="number" placeholder="78" min="30" max="110" />
+          <div class="mrow" style="border-bottom:none">
+            <span class="mrow-label">Inseam</span>
+            <input id="field-inseam" class="mrow-input" type="number" placeholder="78" min="30" max="110" />
+            <span class="mrow-unit">cm</span>
           </div>
         </div>
+        <p class="field-hint">Body measurements, not clothing label sizes</p>
+      </div>
 
-        <div class="measure-item" style="margin-top:10px">
-          <span class="measure-label">Shoe (foot length in cm)</span>
-          <input id="field-shoeLength" class="input input-sm" type="number" step="0.5" placeholder="26.5" min="15" max="33" />
+      <!-- Derived sizes preview -->
+      <div id="derived-box" class="derived-box" hidden>
+        <div class="derived-preview">
+          <span id="preview-emoji" class="preview-emoji">🌸</span>
+          <div class="derived-info">
+            <div id="derived-sizes-text" class="derived-main"></div>
+            <div class="derived-hint">L = international · 42 = Indian numeric</div>
+          </div>
         </div>
       </div>
 
-      <!-- Learn from a purchase -->
+      <!-- Warn box -->
+      <div id="measure-warn" class="warn-box" hidden></div>
+
+      <!-- Learn from purchase -->
       <div class="field">
         <label class="label">Learn from a purchase <span class="muted">(optional)</span></label>
         <div class="learn-bar">
-          <input
-            id="field-learn-url"
-            class="input input-sm"
-            type="url"
-            placeholder="Paste Myntra / Amazon India / Flipkart product URL"
-          />
+          <input id="field-learn-url" class="input input-sm" type="url" placeholder="Paste Myntra / Amazon / Flipkart product URL" />
           <button id="btn-learn" class="btn btn-secondary" type="button">Fetch</button>
         </div>
         <span id="learn-status" class="learn-status" hidden></span>
       </div>
 
-      <!-- Live derived sizes preview -->
-      <div id="derived-box" class="derived-box" hidden>
-        <div class="derived-title">Your sizes</div>
-        <div id="derived-chips" class="derived-chips"></div>
-      </div>
-
       <div class="form-actions">
         <button id="btn-cancel" class="btn btn-secondary" type="button">Cancel</button>
-        <button id="btn-save" class="btn btn-primary" type="button">Save member</button>
+        <button id="btn-save" class="btn btn-primary" type="button">Save</button>
       </div>
     </div>
 
   </div>
 
-  <!-- Learned-size suggestion modal (shown on home view when a result is pending) -->
+  <!-- ── Learned-size modal ─────────────────────────────────────────────── -->
   <div id="learn-modal" class="modal-overlay" hidden>
     <div class="modal">
       <div class="modal-header">

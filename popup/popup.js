@@ -1,23 +1,34 @@
-/**
- * Popup controller.
- * Depends on size-charts.js and storage.js loaded via script tags.
- */
-
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 
-const viewHome   = document.getElementById('view-home');
-const viewForm   = document.getElementById('view-form');
-const membersList = document.getElementById('members-list');
-const emptyState  = document.getElementById('empty-state');
+const viewHome      = document.getElementById('view-home');
+const viewForm      = document.getElementById('view-form');
+const membersList   = document.getElementById('members-list');
+const emptyState    = document.getElementById('empty-state');
 const profileSelect = document.getElementById('profile-select');
-const formTitle   = document.getElementById('form-title');
-const derivedBox  = document.getElementById('derived-box');
-const derivedChips = document.getElementById('derived-chips');
+const formTitle     = document.getElementById('form-title');
+const derivedBox    = document.getElementById('derived-box');
+const derivedText   = document.getElementById('derived-sizes-text');
+const previewEmoji  = document.getElementById('preview-emoji');
+const warnBox       = document.getElementById('measure-warn');
+
+// ── SVG icons ─────────────────────────────────────────────────────────────────
+
+const ICON_EDIT = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+</svg>`;
+
+const ICON_DELETE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="3 6 5 6 21 6"/>
+  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+  <path d="M10 11v6M14 11v6"/>
+  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+</svg>`;
 
 // ── State ─────────────────────────────────────────────────────────────────────
 
-let editingId = null;
-let selectedEmoji = '👨';
+let editingId     = null;
+let selectedEmoji = '🌸';
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
@@ -33,7 +44,6 @@ async function renderHome() {
   const data = await getStorageData();
   const { profiles, activeProfileId } = data;
 
-  // Populate profile selector
   profileSelect.innerHTML = '<option value="">None</option>';
   for (const p of profiles) {
     const opt = document.createElement('option');
@@ -43,7 +53,6 @@ async function renderHome() {
     profileSelect.appendChild(opt);
   }
 
-  // Render member cards
   membersList.innerHTML = '';
   if (!profiles.length) {
     emptyState.hidden = false;
@@ -52,43 +61,42 @@ async function renderHome() {
     emptyState.hidden = true;
     membersList.hidden = false;
     for (const p of profiles) {
-      membersList.appendChild(buildMemberCard(p, p.id === activeProfileId));
+      membersList.appendChild(buildMemberCard(p));
     }
   }
 }
 
-function buildMemberCard(profile, isActive) {
+function buildMemberCard(profile) {
   const card = document.createElement('div');
-  card.className = 'member-card' + (isActive ? ' is-active' : '');
+  card.className = 'member-card';
 
-  const sizes = deriveSizes(profile.measurements || {});
-  const chips = buildChips(sizes);
+  const sz = deriveSizes(profile.measurements || {});
+  const sizeLine = buildSizeLine(sz);
 
   card.innerHTML = `
-    <div class="member-emoji">${profile.emoji}</div>
+    <div class="member-avatar">${profile.emoji}</div>
     <div class="member-info">
       <div class="member-name">${esc(profile.name)}</div>
-      <div class="member-chips">${chips}</div>
+      <div class="member-size">${sizeLine}</div>
     </div>
     <div class="member-actions">
-      <button class="btn-icon" data-action="edit"   title="Edit">✏️</button>
-      <button class="btn-icon danger" data-action="delete" title="Remove">🗑</button>
+      <button class="btn-icon" data-action="edit"   title="Edit">${ICON_EDIT}</button>
+      <button class="btn-icon danger" data-action="delete" title="Remove">${ICON_DELETE}</button>
     </div>
   `;
 
   card.querySelector('[data-action="edit"]').addEventListener('click', () => showForm(profile));
   card.querySelector('[data-action="delete"]').addEventListener('click', () => handleDelete(profile.id, profile.name));
-
   return card;
 }
 
-function buildChips(sizes) {
+/** Builds the one-line size summary shown on member cards. */
+function buildSizeLine(sizes) {
   const parts = [];
-  if (sizes.top)    parts.push(`<span class="chip">Tops: ${sizes.top.alpha} / ${sizes.top.numeric}</span>`);
-  if (sizes.bottom) parts.push(`<span class="chip">Bottoms: ${sizes.bottom.label}</span>`);
-  if (sizes.shoe)   parts.push(`<span class="chip">Shoes: UK ${sizes.shoe.uk}</span>`);
-  if (!parts.length) parts.push(`<span class="chip chip-empty">No measurements</span>`);
-  return parts.join('');
+  if (sizes.top)    parts.push(`<strong>${sizes.top.alpha} · ${sizes.top.numeric}</strong>`);
+  if (sizes.bottom) parts.push(`Waist <strong>${sizes.bottom.label}</strong>`);
+  if (!parts.length) return '<span style="opacity:.5">No measurements yet</span>';
+  return parts.join(' &nbsp;·&nbsp; ');
 }
 
 // ── Form view ─────────────────────────────────────────────────────────────────
@@ -97,18 +105,15 @@ function showForm(profile = null) {
   editingId = profile?.id || null;
   formTitle.textContent = profile ? 'Edit member' : 'Add member';
 
-  // Reset
-  document.getElementById('field-id').value    = editingId || '';
-  document.getElementById('field-name').value  = profile?.name || '';
+  document.getElementById('field-id').value   = editingId || '';
+  document.getElementById('field-name').value = profile?.name || '';
 
-  const fields = ['height', 'chest', 'waist', 'hip', 'shoulder', 'inseam', 'shoeLength'];
   const m = profile?.measurements || {};
-  for (const f of fields) {
+  ['height', 'chest', 'waist', 'hip', 'shoulder', 'inseam'].forEach(f => {
     document.getElementById(`field-${f}`).value = m[f] || '';
-  }
+  });
 
-  // Emoji
-  selectedEmoji = profile?.emoji || '👨';
+  selectedEmoji = profile?.emoji || '🌸';
   document.querySelectorAll('.emoji-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.emoji === selectedEmoji);
   });
@@ -128,56 +133,41 @@ function showHome() {
 
 // ── Derived sizes preview ─────────────────────────────────────────────────────
 
-/** Shows a warning if any measurement looks like a clothing size, not a body cm value. */
-function refreshWarnings(m) {
-  const existing = document.getElementById('measure-warn');
-  if (existing) existing.remove();
-
-  const suspicious = [];
-  if (m.chest && m.chest < 60)      suspicious.push(`Chest ${m.chest} cm seems too small — did you enter a clothing size (e.g. 38) instead of body measurement (~96 cm)?`);
-  if (m.waist && m.waist < 40)      suspicious.push(`Waist ${m.waist} cm seems too small — enter body measurement in cm (e.g. 80), not pant size (e.g. 30).`);
-  if (m.shoeLength && m.shoeLength < 15) suspicious.push(`Shoe foot length ${m.shoeLength} cm seems too small — measure your foot heel to toe (e.g. 26.5 cm).`);
-
-  if (!suspicious.length) return;
-
-  const box = document.createElement('div');
-  box.id = 'measure-warn';
-  box.className = 'warn-box';
-  box.innerHTML = `<span>⚠️</span><span>${suspicious[0]}</span>`;
-
-  // Insert before derived-box
-  derivedBox.before(box);
-}
-
 function refreshDerived() {
   const m = readMeasurements();
-  refreshWarnings(m);
+  refreshWarning(m);
+
   const sizes = deriveSizes(m);
-  const hasAny = sizes.top || sizes.bottom || sizes.shoe;
+  const hasAny = sizes.top || sizes.bottom;
 
   derivedBox.hidden = !hasAny;
   if (!hasAny) return;
 
-  const chips = [];
-  if (sizes.top) {
-    chips.push(`<div class="derived-chip"><span class="dim">Tops </span>${sizes.top.alpha} · ${sizes.top.numeric}</div>`);
+  previewEmoji.textContent = selectedEmoji;
+
+  const parts = [];
+  if (sizes.top)    parts.push(`${sizes.top.alpha} · ${sizes.top.numeric}`);
+  if (sizes.bottom) parts.push(`Waist ${sizes.bottom.label}`);
+  derivedText.textContent = parts.join('   ');
+}
+
+function refreshWarning(m) {
+  warnBox.hidden = true;
+  if (m.chest && m.chest < 60) {
+    warnBox.hidden = false;
+    warnBox.innerHTML = `⚠️ &nbsp;Chest ${m.chest} cm looks too small — enter body measurement (~96 cm), not clothing size (38).`;
+  } else if (m.waist && m.waist < 40) {
+    warnBox.hidden = false;
+    warnBox.innerHTML = `⚠️ &nbsp;Waist ${m.waist} cm looks too small — enter body measurement in cm (e.g. 80), not pant size (30).`;
   }
-  if (sizes.bottom) {
-    chips.push(`<div class="derived-chip"><span class="dim">Bottoms </span>${sizes.bottom.label}</div>`);
-  }
-  if (sizes.shoe) {
-    chips.push(`<div class="derived-chip"><span class="dim">Shoe </span>UK ${sizes.shoe.uk} · EU ${sizes.shoe.eu} · US ${sizes.shoe.usM}</div>`);
-  }
-  derivedChips.innerHTML = chips.join('');
 }
 
 function readMeasurements() {
-  const fields = ['height', 'chest', 'waist', 'hip', 'shoulder', 'inseam', 'shoeLength'];
   const m = {};
-  for (const f of fields) {
+  ['height', 'chest', 'waist', 'hip', 'shoulder', 'inseam'].forEach(f => {
     const v = parseFloat(document.getElementById(`field-${f}`).value);
     if (!isNaN(v) && v > 0) m[f] = v;
-  }
+  });
   return m;
 }
 
@@ -188,6 +178,8 @@ async function handleSave() {
   const name = nameEl.value.trim();
   if (!name) { nameEl.focus(); return; }
 
+  const isNew = !editingId;
+
   const profile = {
     id: editingId || generateId(),
     name,
@@ -196,6 +188,9 @@ async function handleSave() {
   };
 
   await saveProfile(profile);
+
+  if (isNew) fireConfetti();
+
   showHome();
 }
 
@@ -205,14 +200,33 @@ async function handleDelete(id, name) {
   renderHome();
 }
 
+// ── Confetti (lazy-loaded from CDN, zero bundle cost) ─────────────────────────
+
+async function fireConfetti() {
+  try {
+    if (!window.confetti) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    window.confetti({ particleCount: 100, spread: 65, origin: { y: 0.7 } });
+  } catch (_) {
+    // CDN unavailable — silently skip confetti
+  }
+}
+
 // ── Learn-from-purchase ───────────────────────────────────────────────────────
 
 const SUPPORTED_LEARN_HOSTS = ['www.myntra.com', 'www.amazon.in', 'www.flipkart.com'];
 
 async function handleLearnFetch() {
-  const input = document.getElementById('field-learn-url');
+  const input    = document.getElementById('field-learn-url');
   const statusEl = document.getElementById('learn-status');
-  const url = input.value.trim();
+  const url      = input.value.trim();
 
   statusEl.hidden = false;
   statusEl.className = 'learn-status';
@@ -234,19 +248,17 @@ async function handleLearnFetch() {
 
   const profileId = document.getElementById('field-id').value;
   if (!profileId) {
-    // Save the profile first so we have an ID to attach to
-    statusEl.textContent = 'Save the profile first, then fetch.';
+    statusEl.textContent = 'Save the profile first, then use this feature.';
     statusEl.classList.add('err');
     return;
   }
 
   await setLearnMode(profileId);
   chrome.tabs.create({ url });
-  statusEl.textContent = '✓ Opening page… pick your size there, then come back.';
+  statusEl.textContent = '✓ Opening page — pick your size there, then come back.';
   statusEl.classList.add('ok');
 }
 
-/** Called on boot — shows the modal if a learned size is pending. */
 async function checkForLearned() {
   const data = await getStorageData();
   if (!data.learnedResult) return;
@@ -254,18 +266,17 @@ async function checkForLearned() {
 }
 
 function showLearnModal(result, profiles) {
-  const modal = document.getElementById('learn-modal');
-  const body  = document.getElementById('learn-modal-body');
+  const modal   = document.getElementById('learn-modal');
+  const body    = document.getElementById('learn-modal-body');
   const profile = profiles.find(p => p.id === result.profileId);
   if (!profile) { clearLearned(); return; }
 
-  const catLabel = { top: 'Tops', bottom: 'Bottoms', shoe: 'Shoes' }[result.category] || result.category;
-  const midpoint = getSizeMidpoint(result.size, result.category);
-  const field    = CATEGORY_FIELD[result.category]; // 'chest' | 'waist' | 'shoeLength'
-  const existing = (profile.measurements || {})[field];
+  const catLabel  = { top: 'Tops', bottom: 'Bottoms', shoe: 'Shoes' }[result.category] || result.category;
+  const midpoint  = getSizeMidpoint(result.size, result.category);
+  const field     = CATEGORY_FIELD[result.category];
+  const existing  = (profile.measurements || {})[field];
   const hasExisting = existing != null && existing > 0;
-
-  const avgValue = hasExisting && midpoint ? ((existing + midpoint) / 2).toFixed(1) : null;
+  const avgValue  = hasExisting && midpoint ? ((existing + midpoint) / 2).toFixed(1) : null;
 
   body.innerHTML = `
     <strong>${profile.emoji} ${esc(profile.name)}</strong> bought size
@@ -274,41 +285,31 @@ function showLearnModal(result, profiles) {
       ${hasExisting
         ? `Current ${field}: <strong>${existing} cm</strong>.
            ${midpoint ? `Midpoint for ${result.size}: <strong>${midpoint} cm</strong>.` : ''}
-           ${avgValue ? `Average would be <strong>${avgValue} cm</strong>.` : ''}`
+           ${avgValue ? `Average: <strong>${avgValue} cm</strong>.` : ''}`
         : midpoint
-          ? `No ${field} stored yet. Override will set it to <strong>${midpoint} cm</strong> (midpoint of size ${result.size}).`
+          ? `No ${field} stored. Override sets it to <strong>${midpoint} cm</strong>.`
           : `No measurement to compute — skip or update manually.`
       }
     </div>
   `;
 
-  // Disable Average if no existing value to average with
   document.getElementById('btn-lm-average').disabled = !avgValue;
-
   modal.hidden = false;
 
-  // Wire buttons
   document.getElementById('btn-lm-skip').onclick = async () => {
-    await clearLearned();
-    modal.hidden = true;
+    await clearLearned(); modal.hidden = true;
   };
-
   document.getElementById('btn-lm-average').onclick = async () => {
     if (!avgValue || !field) return;
     const updated = { ...(profile.measurements || {}), [field]: parseFloat(avgValue) };
     await saveProfile({ ...profile, measurements: updated });
-    await clearLearned();
-    modal.hidden = true;
-    await renderHome();
+    await clearLearned(); modal.hidden = true; renderHome();
   };
-
   document.getElementById('btn-lm-override').onclick = async () => {
     if (!midpoint || !field) { await clearLearned(); modal.hidden = true; return; }
     const updated = { ...(profile.measurements || {}), [field]: midpoint };
     await saveProfile({ ...profile, measurements: updated });
-    await clearLearned();
-    modal.hidden = true;
-    await renderHome();
+    await clearLearned(); modal.hidden = true; renderHome();
   };
 }
 
@@ -330,14 +331,13 @@ function attachListeners() {
     if (!btn) return;
     selectedEmoji = btn.dataset.emoji;
     document.querySelectorAll('.emoji-btn').forEach(b => b.classList.toggle('active', b === btn));
+    previewEmoji.textContent = selectedEmoji;
   });
 
-  // Live derived sizes on measurement input
-  ['field-chest', 'field-waist', 'field-shoeLength'].forEach(id => {
+  ['field-chest', 'field-waist'].forEach(id => {
     document.getElementById(id).addEventListener('input', refreshDerived);
   });
 
-  // Learn fetch button
   document.getElementById('btn-learn').addEventListener('click', handleLearnFetch);
 }
 
