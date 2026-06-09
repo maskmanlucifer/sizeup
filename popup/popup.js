@@ -246,12 +246,25 @@ async function handleLearnFetch() {
     return;
   }
 
-  const profileId = document.getElementById('field-id').value;
-  if (!profileId) {
-    statusEl.textContent = 'Save the profile first, then use this feature.';
+  // Auto-save the profile so we have an ID — name is the only hard requirement
+  const nameEl = document.getElementById('field-name');
+  const name   = nameEl.value.trim();
+  if (!name) {
+    nameEl.focus();
+    statusEl.textContent = 'Add a name first so we know who this size belongs to.';
     statusEl.classList.add('err');
     return;
   }
+
+  const profileId = document.getElementById('field-id').value || generateId();
+  document.getElementById('field-id').value = profileId;
+
+  await saveProfile({
+    id: profileId,
+    name,
+    emoji: selectedEmoji,
+    measurements: readMeasurements(),
+  });
 
   await setLearnMode(profileId);
   chrome.tabs.create({ url });
