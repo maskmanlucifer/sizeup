@@ -40,15 +40,17 @@ const MyntraPlatform = (() => {
 
   function isUnavailable(el) {
     if (el.style?.pointerEvents === 'none' || el.disabled) return true;
-    // "not-available" may live on the button itself, its parent, or grandparent container
-    let node = el;
-    for (let i = 0; i < 3 && node; i++, node = node.parentElement) {
-      const cls = node.className || '';
-      if (cls.includes('not-available') || cls.includes('outOfStock') ||
-          cls.includes('unavailable') || cls.includes('disabled')) return true;
-    }
-    // Myntra renders a strike-through span inside disabled buttons
+    // Specific Myntra disabled class — only check the element itself, not parents,
+    // to avoid false positives from ancestor containers that also carry "disabled"
+    if ((el.className || '').includes('size-buttons-size-button-disabled')) return true;
+    // Strike-through span is rendered inside OOS buttons
     if (el.querySelector('.size-buttons-size-strike-show')) return true;
+    // Generic OOS class names may live on parent containers
+    let node = el.parentElement;
+    for (let i = 0; i < 2 && node; i++, node = node.parentElement) {
+      const cls = node.className || '';
+      if (cls.includes('not-available') || cls.includes('outOfStock') || cls.includes('unavailable')) return true;
+    }
     return false;
   }
 
