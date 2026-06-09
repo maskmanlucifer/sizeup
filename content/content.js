@@ -17,108 +17,135 @@
     const style = document.createElement('style');
     style.id = STYLES_ID;
     style.textContent = `
-      /* ── Floating listing bar (top-left) ── */
-      #sizeup-bar {
+      /* ── Shared base ── */
+      #sizeup-bar, #sizeup-banner {
         position: fixed;
         top: 70px; left: 20px;
         z-index: 2147483647;
-        background: #5C35E8;
-        color: #fff;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-        padding: 11px 14px 12px;
-        min-width: 170px; max-width: 220px;
+        border-radius: 14px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         font-size: 13px;
-        animation: su-bar-in 0.18s ease;
-      }
-      @keyframes su-bar-in {
-        from { transform: translateX(-10px); opacity: 0; }
-        to   { transform: translateX(0);     opacity: 1; }
-      }
-      #sizeup-bar .su-bar-head {
-        display: flex; align-items: center; gap: 7px;
-        margin-bottom: 6px;
-      }
-      #sizeup-bar .su-bar-logo img {
-        width: 18px; height: 18px;
-        object-fit: contain;
-        filter: brightness(0) invert(1);
-        display: block;
-      }
-      #sizeup-bar .su-bar-profile {
-        font-weight: 600; font-size: 13px;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
-      #sizeup-bar .su-bar-size {
-        font-size: 12px; opacity: 0.8;
-        margin-bottom: 9px;
-      }
-      #sizeup-bar .su-bar-btn {
-        display: block; width: 100%;
-        height: 28px; padding: 0 12px;
-        border-radius: 8px;
-        font-size: 12px; font-weight: 600;
-        cursor: pointer; border: none; font-family: inherit;
-        white-space: nowrap; text-align: center;
-        transition: opacity 0.15s;
-      }
-      #sizeup-bar .su-bar-btn:hover { opacity: 0.85; }
-      #sizeup-bar .su-bar-apply {
-        background: #fff;
-        color: #5C35E8;
-      }
-      #sizeup-bar .su-bar-clear {
-        background: rgba(255,255,255,0.15);
-        color: #fff;
-        border: 1px solid rgba(255,255,255,0.3);
-      }
-      #sizeup-bar .su-bar-filtered {
-        font-size: 11px; opacity: 0.75;
-        margin-bottom: 6px;
-      }
-
-      /* ── Floating banner (product pages) ── */
-      #sizeup-banner {
-        position: fixed;
-        top: 70px; left: 20px;
-        z-index: 2147483647;
-        background: #fff;
-        border: 1.5px solid #E5E7EB;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.13);
-        padding: 12px 14px;
-        max-width: 270px; min-width: 220px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-        font-size: 13px;
-        color: #111827;
-        animation: su-in 0.18s ease;
-        line-height: 1.4;
+        min-width: 210px; max-width: 248px;
+        animation: su-in 0.22s cubic-bezier(0.16,1,0.3,1);
       }
       @keyframes su-in {
-        from { transform: translateX(-10px); opacity: 0; }
+        from { transform: translateX(-14px); opacity: 0; }
         to   { transform: translateX(0);     opacity: 1; }
       }
-      #sizeup-banner .su-row { display: flex; align-items: flex-start; gap: 8px; }
-      #sizeup-banner .su-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-      #sizeup-banner .su-body { flex: 1; min-width: 0; }
-      #sizeup-banner .su-msg { font-weight: 600; }
-      #sizeup-banner .su-sub { font-size: 11px; color: #6B7280; margin-top: 2px; }
+
+      /* ── Listing bar (purple) ── */
+      #sizeup-bar {
+        background: #5C35E8; color: #fff;
+        box-shadow: 0 8px 30px rgba(92,53,232,0.38);
+        padding: 13px 14px 13px;
+      }
+      #sizeup-bar .su-bar-head {
+        display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+      }
+      #sizeup-bar .su-bar-logo img {
+        width: 15px; height: 15px; object-fit: contain;
+        filter: brightness(0) invert(1); display: block;
+      }
+      #sizeup-bar .su-bar-wordmark {
+        font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+        opacity: 0.65; text-transform: uppercase;
+      }
+      #sizeup-bar .su-bar-size {
+        font-size: 24px; font-weight: 800; letter-spacing: -0.5px;
+        line-height: 1; margin-bottom: 2px;
+      }
+      #sizeup-bar .su-bar-size-sub {
+        font-size: 11px; opacity: 0.7; margin-bottom: 0;
+      }
+      #sizeup-bar .su-bar-filtered-tag {
+        display: inline-flex; align-items: center; gap: 3px;
+        font-size: 10px; font-weight: 600;
+        background: rgba(255,255,255,0.18); border-radius: 999px;
+        padding: 2px 8px; margin-top: 4px; opacity: 0.9;
+      }
+      #sizeup-bar .su-bar-btn {
+        display: block; width: 100%; height: 32px;
+        border-radius: 8px; font-size: 12px; font-weight: 700;
+        cursor: pointer; border: none; font-family: inherit;
+        margin-top: 11px; transition: opacity 0.15s; text-align: center;
+      }
+      #sizeup-bar .su-bar-btn:hover { opacity: 0.88; }
+      #sizeup-bar .su-bar-apply { background: #fff; color: #5C35E8; }
+      #sizeup-bar .su-bar-clear {
+        background: rgba(255,255,255,0.15); color: #fff;
+        border: 1px solid rgba(255,255,255,0.3);
+      }
+
+      /* ── Product banner (white card) ── */
+      #sizeup-banner {
+        background: #fff; color: #111827;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.13);
+        border: 1.5px solid #EAE6FF;
+        overflow: hidden; line-height: 1.4;
+      }
+      #sizeup-banner .su-accent {
+        height: 4px;
+      }
+      #sizeup-banner .su-accent.avail    { background: #22C55E; }
+      #sizeup-banner .su-accent.unavail  { background: #EF4444; }
+      #sizeup-banner .su-accent.unlisted { background: #D1D5DB; }
+      #sizeup-banner .su-banner-body { padding: 11px 13px 13px; }
+      #sizeup-banner .su-top-row {
+        display: flex; align-items: flex-start;
+        justify-content: space-between; margin-bottom: 2px;
+      }
+      #sizeup-banner .su-hero {
+        font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #111827;
+        line-height: 1;
+      }
+      #sizeup-banner .su-hero-sub {
+        font-size: 12px; color: #6B7280; margin-top: 3px; margin-bottom: 10px;
+      }
       #sizeup-banner .su-close {
         background: none; border: none; cursor: pointer;
-        color: #9CA3AF; font-size: 14px; padding: 0; line-height: 1; flex-shrink: 0;
+        color: #9CA3AF; font-size: 15px; padding: 0; line-height: 1; flex-shrink: 0;
+        margin-top: 2px;
       }
       #sizeup-banner .su-close:hover { color: #374151; }
-      #sizeup-banner .su-actions { display: flex; gap: 6px; margin-top: 10px; }
+      #sizeup-banner .su-actions { display: flex; gap: 6px; margin-top: 11px; }
       #sizeup-banner .su-btn {
-        height: 28px; padding: 0 11px; border-radius: 6px;
-        font-size: 12px; font-weight: 500; cursor: pointer; border: none; font-family: inherit;
+        height: 30px; padding: 0 14px; border-radius: 8px;
+        font-size: 12px; font-weight: 600; cursor: pointer;
+        border: none; font-family: inherit; transition: opacity 0.15s;
       }
+      #sizeup-banner .su-btn:hover { opacity: 0.85; }
       #sizeup-banner .su-primary { background: #5C35E8; color: #fff; }
-      #sizeup-banner .su-primary:hover { background: #4526C9; }
       #sizeup-banner .su-secondary { background: #F3F4F6; color: #374151; }
-      #sizeup-banner .su-secondary:hover { background: #E5E7EB; }
-      #sizeup-banner .su-brand { font-size: 10px; color: #9CA3AF; text-align: right; margin-top: 8px; }
+      #sizeup-banner .su-brand {
+        font-size: 10px; color: #C4B5FD; text-align: right; margin-top: 9px;
+      }
+
+      /* ── Profile switcher chips (shared, different themes) ── */
+      .su-profiles {
+        display: flex; gap: 5px; flex-wrap: wrap;
+        padding-top: 9px; margin-top: 9px;
+      }
+      #sizeup-bar    .su-profiles { border-top: 1px solid rgba(255,255,255,0.18); }
+      #sizeup-banner .su-profiles { border-top: 1px solid #F0EEFF; }
+      .su-profile-chip {
+        height: 24px; padding: 0 9px; border-radius: 999px;
+        font-size: 11px; font-weight: 500; cursor: pointer;
+        font-family: inherit; white-space: nowrap; transition: all 0.12s;
+      }
+      #sizeup-bar .su-profile-chip {
+        background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8);
+        border: 1px solid rgba(255,255,255,0.28);
+      }
+      #sizeup-bar .su-profile-chip.active {
+        background: #fff; color: #5C35E8; border-color: transparent; font-weight: 700;
+      }
+      #sizeup-banner .su-profile-chip {
+        background: #F5F3FF; color: #6B7280; border: 1px solid #E9E6FF;
+      }
+      #sizeup-banner .su-profile-chip.active {
+        background: #EDE9FE; color: #5C35E8; border-color: #5C35E8; font-weight: 700;
+      }
+
       /* ── Size highlight on product pages ── */
       .sizeup-match {
         outline: 2.5px solid #5C35E8 !important;
@@ -134,10 +161,23 @@
     document.getElementById(BAR_ID)?.remove();
   }
 
-  /**
-   * @param {{ profile: Object, sizeLabel: string, facetValue: string, isFiltered: boolean }} opts
-   */
-  function showBar({ profile, sizeLabel, facetValue, isFiltered }) {
+  function profileChipsHtml(profiles, activeId) {
+    return profiles.map(p =>
+      `<button class="su-profile-chip${p.id === activeId ? ' active' : ''}" data-id="${p.id}">${p.emoji} ${p.name}</button>`
+    ).join('');
+  }
+
+  function attachProfileChips(el, activeId) {
+    el.querySelectorAll('.su-profile-chip').forEach(chip => {
+      chip.addEventListener('click', async () => {
+        if (chip.dataset.id === activeId) return;
+        await setActiveProfile(chip.dataset.id);
+        cleanup(); init();
+      });
+    });
+  }
+
+  function showBar({ profile, allProfiles, sizeLabel, facetValue, isFiltered }) {
     removeBar();
     const bar = document.createElement('div');
     bar.id = BAR_ID;
@@ -146,26 +186,23 @@
     bar.innerHTML = `
       <div class="su-bar-head">
         <div class="su-bar-logo"><img src="${iconUrl}" alt="SizeUp" /></div>
-        <div class="su-bar-profile">${profile.emoji} ${profile.name}</div>
+        <span class="su-bar-wordmark">SizeUp</span>
       </div>
-      <div class="su-bar-size">Size ${sizeLabel}</div>
+      <div class="su-bar-size">${sizeLabel}</div>
+      <div class="su-bar-size-sub">${isFiltered ? '✓ Filtered' : 'Your size'}</div>
+      <div class="su-profiles">${profileChipsHtml(allProfiles, profile.id)}</div>
       ${isFiltered
-        ? `<div class="su-bar-filtered">✓ Filtered</div>
-           <button class="su-bar-btn su-bar-clear" id="su-clear">Clear filter</button>`
+        ? `<button class="su-bar-btn su-bar-clear" id="su-clear">Clear filter</button>`
         : `<button class="su-bar-btn su-bar-apply" id="su-apply">Filter by ${sizeLabel}</button>`
       }
     `;
 
     if (isFiltered) {
-      bar.querySelector('#su-clear').addEventListener('click', () => {
-        location.href = buildClearUrl();
-      });
+      bar.querySelector('#su-clear').addEventListener('click', () => { location.href = buildClearUrl(); });
     } else {
-      bar.querySelector('#su-apply').addEventListener('click', () => {
-        location.href = buildFilterUrl(facetValue);
-      });
+      bar.querySelector('#su-apply').addEventListener('click', () => { location.href = buildFilterUrl(facetValue); });
     }
-
+    attachProfileChips(bar, profile.id);
     document.body.appendChild(bar);
   }
 
@@ -175,27 +212,29 @@
     document.getElementById(BANNER_ID)?.remove();
   }
 
-  function showBanner({ icon, msg, sub, actions }) {
+  function showBanner({ accentClass, hero, sub, actions, profiles, activeProfileId }) {
     removeBanner();
     const el = document.createElement('div');
     el.id = BANNER_ID;
     el.innerHTML = `
-      <div class="su-row">
-        <span class="su-icon">${icon}</span>
-        <div class="su-body">
-          <div class="su-msg">${msg}</div>
-          ${sub ? `<div class="su-sub">${sub}</div>` : ''}
+      <div class="su-accent ${accentClass}"></div>
+      <div class="su-banner-body">
+        <div class="su-top-row">
+          <div class="su-hero">${hero}</div>
+          <button class="su-close" title="Dismiss">✕</button>
         </div>
-        <button class="su-close" title="Dismiss">✕</button>
+        ${sub ? `<div class="su-hero-sub">${sub}</div>` : ''}
+        ${profiles?.length ? `<div class="su-profiles">${profileChipsHtml(profiles, activeProfileId)}</div>` : ''}
+        ${actions?.length ? `
+          <div class="su-actions">
+            ${actions.map(a => `<button class="su-btn ${a.primary ? 'su-primary' : 'su-secondary'}" data-id="${a.id}">${a.label}</button>`).join('')}
+          </div>` : ''}
+        <div class="su-brand">SizeUp</div>
       </div>
-      ${actions?.length ? `
-        <div class="su-actions">
-          ${actions.map(a => `<button class="su-btn ${a.primary ? 'su-primary' : 'su-secondary'}" data-id="${a.id}">${a.label}</button>`).join('')}
-        </div>` : ''}
-      <div class="su-brand">SizeUp</div>
     `;
     el.querySelector('.su-close').addEventListener('click', removeBanner);
     actions?.forEach(a => el.querySelector(`[data-id="${a.id}"]`)?.addEventListener('click', a.onClick));
+    if (profiles?.length) attachProfileChips(el, activeProfileId);
     document.body.appendChild(el);
   }
 
@@ -396,11 +435,10 @@
 
   // ── Page handlers ─────────────────────────────────────────────────────────────
 
-  async function handleProduct(profile) {
+  async function handleProduct(profile, allProfiles) {
     await delay(900);
 
     const els = findSizeElements();
-    // No size UI on this product page — likely not a clothing item, skip silently
     if (!els.length) return;
 
     const labels = getSizeLabels(profile.measurements || {});
@@ -419,37 +457,43 @@
     }
 
     const sz = deriveSizes(profile.measurements || {});
-    const label = sz.top    ? `${sz.top.alpha} / ${sz.top.numeric}` :
-                  sz.bottom ? sz.bottom.label :
-                  sz.shoe   ? `UK ${sz.shoe.uk}` : '';
+    const sizeHero = sz.top    ? sz.top.alpha :
+                     sz.bottom ? sz.bottom.label :
+                     sz.shoe   ? `UK ${sz.shoe.uk}` : '?';
+    const sizeSub  = sz.top    ? sz.top.numeric :
+                     sz.bottom ? 'Waist' : '';
+
+    const sharedProps = { profiles: allProfiles, activeProfileId: profile.id };
 
     if (!matchEl) {
-      // Size exists in derived sizes but isn't listed on this product at all
       showBanner({
-        icon: '⚪',
-        msg: `${label || 'Your size'} not on this product`,
-        sub: `${profile.name}'s size isn't offered here`,
+        accentClass: 'unlisted',
+        hero: sizeHero,
+        sub: `Not offered on this product`,
+        ...sharedProps,
       });
       return;
     }
 
     if (available) {
       showBanner({
-        icon: '🟢',
-        msg: `${profile.name}'s size available`,
-        sub: label ? `${label} · highlighted above` : 'Highlighted above',
+        accentClass: 'avail',
+        hero: `${sizeHero} fits ${profile.name}`,
+        sub: sizeSub ? `${sizeSub} · highlighted above` : 'Highlighted above',
         actions: [{ id: 'sel', label: 'Select size', primary: true, onClick: () => { matchEl.click(); removeBanner(); } }],
+        ...sharedProps,
       });
     } else {
       showBanner({
-        icon: '🔴',
-        msg: `${label || 'Size'} out of stock`,
-        sub: `${profile.name}'s size isn't available right now`,
+        accentClass: 'unavail',
+        hero: `${sizeHero} out of stock`,
+        sub: `${profile.name}'s size isn't available`,
+        ...sharedProps,
       });
     }
   }
 
-  async function handleListing(profile) {
+  async function handleListing(profile, allProfiles) {
     if (site() !== 'myntra') return;
 
     const category = getMyntraCategory();
@@ -460,7 +504,7 @@
     const currentFacet = getCurrentFacet();
     const isFiltered = currentFacet?.toLowerCase() === facetValue.toLowerCase();
 
-    showBar({ profile, sizeLabel, facetValue, isFiltered });
+    showBar({ profile, allProfiles, sizeLabel, facetValue, isFiltered });
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
@@ -468,11 +512,11 @@
   async function init() {
     if (!site()) return;
 
-    // Clear any stale learn-mode flag left over from older versions
     const data = await getStorageData();
     if (data.learnMode) await clearLearnMode();
 
-    const profile = await getActiveProfile();
+    const { profiles, activeProfileId } = data;
+    const profile = profiles?.find(p => p.id === activeProfileId);
     if (!profile) { cleanup(); return; }
 
     injectStyles();
@@ -480,10 +524,10 @@
 
     if (onProductPage()) {
       removeBar();
-      await handleProduct(profile);
+      await handleProduct(profile, profiles);
     } else if (onListingPage()) {
       removeBanner();
-      await handleListing(profile);
+      await handleListing(profile, profiles);
     }
   }
 
