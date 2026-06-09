@@ -173,7 +173,6 @@ async function handleSave() {
   const name   = nameEl.value.trim();
   if (!name) { nameEl.focus(); return; }
 
-  const isNew = !editingId;
   const profile = {
     id: editingId || generateId(),
     name,
@@ -182,7 +181,6 @@ async function handleSave() {
   };
 
   await saveProfile(profile);
-  if (isNew) fireConfetti();
   showHome();
 }
 
@@ -192,22 +190,6 @@ async function handleDelete(id, name) {
   renderHome();
 }
 
-// ── Confetti (lazy CDN, zero bundle cost) ─────────────────────────────────────
-
-async function fireConfetti() {
-  try {
-    if (!window.confetti) {
-      await new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js';
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    }
-    window.confetti({ particleCount: 100, spread: 65, origin: { y: 0.7 } });
-  } catch (_) { /* CDN unavailable — skip silently */ }
-}
 
 // ── Listeners ─────────────────────────────────────────────────────────────────
 
