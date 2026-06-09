@@ -317,11 +317,29 @@
 
   function onListingPage() {
     switch (site()) {
-      case 'myntra':   return !onProductPage() && location.pathname.length > 1;
+      case 'myntra':   return !onProductPage() && location.pathname.length > 1 && isClothingUrl();
       case 'amazon':   return /^\/s/.test(location.pathname) || location.search.includes('k=');
       case 'flipkart': return location.pathname === '/search' || /\/[a-z-]+\/pr\b/i.test(location.pathname);
     }
     return false;
+  }
+
+  /**
+   * Returns false for clearly non-clothing Myntra paths (beauty, bags, watches, etc.)
+   * so we never show the bar on pages where size filtering makes no sense.
+   */
+  function isClothingUrl() {
+    const path = location.pathname.toLowerCase();
+
+    const NON_CLOTHING = /beauty|skincare|makeup|lipstick|mascara|foundation|kajal|kohl|blush|bronzer|concealer|primer|perfume|fragrance|deodorant|grooming|shampoo|conditioner|hair-|nail-|serum|moisturis|sunscreen|toner|facewash|face-wash|bags|handbag|wallet|purse|clutch|backpack|luggage|suitcase|trolley|watch|jewel|necklace|bracelet|earring|\-ring|pendant|brooch|bangle|anklet|home-|kitchen|furniture|decor|bedding|pillow|curtain|lamp|vase|toy|puzzle|board-game|sunglasses|eyewear|frames|spectacles|electronics|mobile|laptop|headphone|speaker|camera|tablet|stationery|book/i;
+
+    const CLOTHING = /shirt|tshirt|t-shirt|top|blouse|kurta|kurti|sweatshirt|hoodie|sweater|jacket|coat|blazer|waistcoat|vest|polo|tunic|jean|trouser|pant|short|jogger|chino|legging|skirt|cargo|track-pant|dress|saree|salwar|suit|jumpsuit|romper|gown|dungaree|overall|shoe|sneaker|sandal|heel|loafer|boot|slipper|footwear|mule|clog|brief|boxer|bra|innerwear|underwear|lingerie|shapewear|sportswear|gymwear|swimwear|swimsuit|bikini|sherwani|dhoti|lungi|capri|ethnic|western|men-wear|women-wear|kids-wear|athleisure|activewear|nightwear|sleepwear|pyjama/i;
+
+    if (NON_CLOTHING.test(path)) return false;
+    if (CLOTHING.test(path))     return true;
+
+    // Ambiguous path — default to showing (better a false positive than missing clothing pages)
+    return true;
   }
 
   // ── Size element finders ──────────────────────────────────────────────────────
@@ -392,6 +410,7 @@
     await delay(900);
 
     const els = findSizeElements();
+    // No size UI on this product page — likely not a clothing item, skip silently
     if (!els.length) return;
 
     const labels = getSizeLabels(profile.measurements || {});
