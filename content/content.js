@@ -37,37 +37,58 @@
       #sizeup-bar {
         background: #5C35E8; color: #fff;
         box-shadow: 0 8px 30px rgba(92,53,232,0.38);
-        padding: 13px 14px 13px;
+        padding: 12px 13px 13px;
       }
       #sizeup-bar .su-bar-head {
-        display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+        display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
       }
       #sizeup-bar .su-bar-logo img {
         width: 15px; height: 15px; object-fit: contain;
         filter: brightness(0) invert(1); display: block;
       }
-      #sizeup-bar .su-bar-wordmark {
-        font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
-        opacity: 0.65; text-transform: uppercase;
+      #sizeup-bar .su-bar-heading {
+        font-size: 11px; font-weight: 700; letter-spacing: 0.7px;
+        opacity: 0.7; text-transform: uppercase;
       }
-      #sizeup-bar .su-bar-size {
-        font-size: 24px; font-weight: 800; letter-spacing: -0.5px;
-        line-height: 1; margin-bottom: 2px;
+      /* profile cards */
+      #sizeup-bar .su-bar-profiles {
+        display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px;
       }
-      #sizeup-bar .su-bar-size-sub {
-        font-size: 11px; opacity: 0.7; margin-bottom: 0;
+      #sizeup-bar .su-bar-pcard {
+        display: flex; align-items: center; gap: 9px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 9px; padding: 7px 10px;
+        cursor: pointer; transition: background 0.12s, border-color 0.12s;
       }
-      #sizeup-bar .su-bar-filtered-tag {
-        display: inline-flex; align-items: center; gap: 3px;
-        font-size: 10px; font-weight: 600;
-        background: rgba(255,255,255,0.18); border-radius: 999px;
-        padding: 2px 8px; margin-top: 4px; opacity: 0.9;
+      #sizeup-bar .su-bar-pcard:hover { background: rgba(255,255,255,0.16); }
+      #sizeup-bar .su-bar-pcard.active {
+        background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.45);
       }
+      #sizeup-bar .su-pcard-check {
+        width: 16px; height: 16px; flex-shrink: 0;
+        border: 1.5px solid rgba(255,255,255,0.4); border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px; font-weight: 800; transition: all 0.12s;
+      }
+      #sizeup-bar .su-bar-pcard.active .su-pcard-check {
+        background: #fff; border-color: #fff; color: #5C35E8;
+      }
+      #sizeup-bar .su-pcard-avatar { font-size: 17px; line-height: 1; }
+      #sizeup-bar .su-pcard-info { flex: 1; min-width: 0; }
+      #sizeup-bar .su-pcard-name {
+        font-size: 12px; font-weight: 600; display: block;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      #sizeup-bar .su-pcard-size {
+        font-size: 11px; opacity: 0.65; display: block; margin-top: 1px;
+      }
+      /* CTA button */
       #sizeup-bar .su-bar-btn {
         display: block; width: 100%; height: 32px;
         border-radius: 8px; font-size: 12px; font-weight: 700;
         cursor: pointer; border: none; font-family: inherit;
-        margin-top: 11px; transition: opacity 0.15s; text-align: center;
+        transition: opacity 0.15s; text-align: center;
       }
       #sizeup-bar .su-bar-btn:hover { opacity: 0.88; }
       #sizeup-bar .su-bar-apply { background: #fff; color: #5C35E8; }
@@ -183,16 +204,31 @@
     bar.id = BAR_ID;
 
     const iconUrl = chrome.runtime.getURL('icons/icon48.png');
+
+    const cards = allProfiles.map(p => {
+      const sz = deriveSizes(p.measurements || {});
+      const szLabel = sz.top    ? `${sz.top.alpha} · ${sz.top.numeric}` :
+                      sz.bottom ? `Waist ${sz.bottom.label}` : '—';
+      const active = p.id === profile.id;
+      return `
+        <div class="su-bar-pcard${active ? ' active' : ''}" data-id="${p.id}">
+          <span class="su-pcard-check">${active ? '✓' : ''}</span>
+          <span class="su-pcard-avatar">${p.emoji}</span>
+          <span class="su-pcard-info">
+            <span class="su-pcard-name">${p.name}</span>
+            <span class="su-pcard-size">${szLabel}</span>
+          </span>
+        </div>`;
+    }).join('');
+
     bar.innerHTML = `
       <div class="su-bar-head">
-        <div class="su-bar-logo"><img src="${iconUrl}" alt="SizeUp" /></div>
-        <span class="su-bar-wordmark">SizeUp</span>
+        <div class="su-bar-logo"><img src="${iconUrl}" alt="" /></div>
+        <span class="su-bar-heading">Filter</span>
       </div>
-      <div class="su-bar-size">${sizeLabel}</div>
-      <div class="su-bar-size-sub">${isFiltered ? '✓ Filtered' : 'Your size'}</div>
-      <div class="su-profiles">${profileChipsHtml(allProfiles, profile.id)}</div>
+      <div class="su-bar-profiles">${cards}</div>
       ${isFiltered
-        ? `<button class="su-bar-btn su-bar-clear" id="su-clear">Clear filter</button>`
+        ? `<button class="su-bar-btn su-bar-clear" id="su-clear">✓ Clear filter</button>`
         : `<button class="su-bar-btn su-bar-apply" id="su-apply">Filter by ${sizeLabel}</button>`
       }
     `;
@@ -202,7 +238,15 @@
     } else {
       bar.querySelector('#su-apply').addEventListener('click', () => { location.href = buildFilterUrl(facetValue); });
     }
-    attachProfileChips(bar, profile.id);
+
+    bar.querySelectorAll('.su-bar-pcard').forEach(card => {
+      card.addEventListener('click', async () => {
+        if (card.dataset.id === profile.id) return;
+        await setActiveProfile(card.dataset.id);
+        cleanup(); init();
+      });
+    });
+
     document.body.appendChild(bar);
   }
 
