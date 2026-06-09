@@ -89,14 +89,12 @@ function buildMemberCard(profile) {
 
   const sz       = deriveSizes(profile.measurements || {});
   const sizeLine = buildSizeLine(sz);
-  const platforms = buildPlatformLine(sz);
 
   card.innerHTML = `
     <div class="member-avatar">${profile.emoji}</div>
     <div class="member-info">
       <div class="member-name">${esc(profile.name)}</div>
       <div class="member-size">${sizeLine}</div>
-      ${platforms ? `<div class="member-platforms">${platforms}</div>` : ''}
     </div>
     <div class="member-actions">
       <button class="btn-icon" data-action="copy"   title="Copy sizes for AI">${ICON_COPY}</button>
@@ -119,23 +117,6 @@ function buildSizeLine(sizes) {
   return parts.join(' &nbsp;·&nbsp; ');
 }
 
-/**
- * Shows platform-specific size labels as a subtle subtitle.
- * e.g. "Myntra L · Flipkart L · Amazon L/42"
- */
-function buildPlatformLine(sizes) {
-  if (!sizes.top && !sizes.bottom) return '';
-  const parts = [];
-  if (sizes.top) {
-    parts.push(`<span class="platform-chip">Myntra&nbsp;${sizes.top.alpha}</span>`);
-    parts.push(`<span class="platform-chip">Flipkart&nbsp;${sizes.top.alpha}</span>`);
-    parts.push(`<span class="platform-chip">Amazon&nbsp;${sizes.top.alpha}/${sizes.top.numeric}</span>`);
-  } else if (sizes.bottom) {
-    parts.push(`<span class="platform-chip">Myntra&nbsp;${sizes.bottom.label}</span>`);
-    parts.push(`<span class="platform-chip">Flipkart&nbsp;${sizes.bottom.label}</span>`);
-  }
-  return parts.join('');
-}
 
 // ── Form view ─────────────────────────────────────────────────────────────────
 
@@ -244,7 +225,6 @@ function showInlineConfirm(card, id) {
 
   actions.innerHTML = `
     <div class="inline-confirm">
-      <span class="inline-confirm-label">Remove?</span>
       <button class="btn-inline-cancel">Cancel</button>
       <button class="btn-inline-ok">Remove</button>
     </div>

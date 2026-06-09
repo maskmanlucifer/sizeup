@@ -20,9 +20,7 @@ SizeUp is a Chrome extension for Indian shoppers. Add your family's measurements
 |---|---|---|
 | Myntra | ✅ multi-select | ✅ |
 | Flipkart | ✅ multi-select | ✅ |
-| Amazon India | — | ✅ |
-
-Amazon listing filter is not supported — Amazon's size facet IDs are dynamic per category and have no universal URL format.
+| Amazon India | ✅ | ✅ |
 
 ---
 
@@ -41,8 +39,7 @@ No build step. No npm. Plain HTML/CSS/JS.
 1. Click the SizeUp icon → **Add family member**
 2. Enter a name, pick an emoji, fill in body measurements (all in cm)
 3. Sizes are derived live as you type
-4. Use the **Shopping for** dropdown to set the active profile
-5. Browse — SizeUp handles the rest
+4. Browse — on listing pages a filter bar lets you pick whose sizes to show; on product pages a banner shows fit status for every profile
 
 Up to **10 profiles** per account. Profiles sync across Chrome devices via `chrome.storage.sync`.
 
@@ -58,53 +55,12 @@ SizeUp maps body measurements to standard Indian sizes (XS–4XL for tops, 26–
 
 ---
 
-## Project structure
-
-```
-sizeup/
-├── manifest.json
-├── popup/
-│   ├── popup.html
-│   ├── popup.css
-│   └── popup.js
-├── content/
-│   ├── content.js          Orchestrator — init, SPA detection, page handlers
-│   ├── ui.js               Listing bar + product banner rendering
-│   └── platforms/
-│       ├── myntra.js        Myntra adapter
-│       ├── flipkart.js      Flipkart adapter
-│       └── amazon.js        Amazon India adapter
-├── background/
-│   └── service_worker.js
-├── utils/
-│   ├── storage.js           chrome.storage.sync helpers
-│   └── size-charts.js       Measurement → size derivation + adjacent matching
-└── icons/
-```
-
-Each platform adapter exposes the same interface:
-`onProductPage`, `onListingPage`, `findSizeElements`, `isUnavailable`, `sizeText`, `getSizeFacet`, `getCurrentFilters`, `buildFilterUrl`
-
----
-
-## What's been added
-
-- **Multi-profile listing filter** — toggle multiple family members' sizes simultaneously
-- **Adjacent size matching** — "May fit" for ±1 size band handles brand variation automatically
-- **Flipkart listing filter** — `p[]=facets.size[]=L` URL format, fully multi-select
-- **Platform adapters** — clean separation of all site-specific logic
-- **Cross-device sync** — profiles stored in `chrome.storage.sync`
-- **Platform size chips** — popup shows per-platform sizes for each member card
-
----
-
 ## Planned
 
 - Amazon India listing filter (requires per-category facet ID discovery)
 - Brand-specific size overrides ("I'm L in Puma but M in H&M")
 - Learn from a purchase — suggest measurement updates based on what you bought
 - Kids / age-based size profiles
-- Shoe half-size support
 
 ---
 
