@@ -204,6 +204,7 @@
     bar.querySelectorAll('.su-bar-pcard').forEach((card, i) => {
       const { p, facetValue, checked } = cardData[i];
       card.addEventListener('click', async () => {
+        _navigating = true;
         if (p.id !== profile.id) await setActiveProfile(p.id);
         // Tap checked card = clear; tap any other = apply that profile's filter
         location.href = checked ? buildClearUrl() : buildFilterUrl(facetValue);
@@ -540,18 +541,24 @@
     return new Promise(r => setTimeout(r, ms));
   }
 
-  // Re-run on SPA navigation
+  // Suppress re-init when we're intentionally navigating away (filter card click)
+  let _navigating = false;
+
+  // Re-run on SPA navigation (debounced so rapid DOM mutations don't multi-fire)
   let lastUrl = location.href;
+  let _navTimer = null;
   new MutationObserver(() => {
+    if (_navigating) return;
     if (location.href !== lastUrl) {
       lastUrl = location.href;
-      cleanup();
-      init();
+      clearTimeout(_navTimer);
+      _navTimer = setTimeout(() => { cleanup(); init(); }, 120);
     }
   }).observe(document.body, { subtree: true, childList: true });
 
-  // Re-run when active profile changes from popup
+  // Re-run when active profile changes from popup (but not during card-click navigation)
   chrome.storage.onChanged.addListener(changes => {
+    if (_navigating) return;
     if (changes[STORAGE_KEY]) { cleanup(); init(); }
   });
 
