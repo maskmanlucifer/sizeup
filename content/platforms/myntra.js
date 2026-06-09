@@ -44,8 +44,11 @@ const MyntraPlatform = (() => {
     let node = el;
     for (let i = 0; i < 3 && node; i++, node = node.parentElement) {
       const cls = node.className || '';
-      if (cls.includes('not-available') || cls.includes('outOfStock') || cls.includes('unavailable')) return true;
+      if (cls.includes('not-available') || cls.includes('outOfStock') ||
+          cls.includes('unavailable') || cls.includes('disabled')) return true;
     }
+    // Myntra renders a strike-through span inside disabled buttons
+    if (el.querySelector('.size-buttons-size-strike-show')) return true;
     return false;
   }
 
