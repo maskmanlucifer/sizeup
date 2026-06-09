@@ -283,12 +283,13 @@
 
     const alpha = sz.top.alpha;
     const url = new URL(location.href);
-    const current = (url.searchParams.get('sizes') || '').toLowerCase().split(',').map(s => s.trim());
+    const fParam = (url.searchParams.get('f') || '').toLowerCase();
 
-    if (current.includes(alpha.toLowerCase())) return; // already filtered
+    // Already filtered for this size
+    if (fParam.includes(`size_facet:${alpha.toLowerCase()}`)) return;
 
     const filtered = new URL(location.href);
-    filtered.searchParams.set('sizes', alpha);
+    filtered.searchParams.set('f', `size_facet:${alpha}`);
 
     showBanner({
       icon: '📐',
