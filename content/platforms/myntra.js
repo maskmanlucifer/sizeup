@@ -30,45 +30,30 @@ const MyntraPlatform = (() => {
   // ── Product page ────────────────────────────────────────────────────────────
 
   function findSizeElements() {
-    let els = document.querySelectorAll(
-      '.size-buttons-unified-size-container .size-buttons-size-button, ' +
-      '.size-buttons-unified-size .size-buttons-size-button'
-    );
-    if (!els.length) els = document.querySelectorAll('[class*="size-buttons-size-button"]');
+    // Target button elements inside their containers — avoids matching ancestor divs
+    // whose class names are superstrings of the button class (e.g. "size-buttons-size-buttons")
+    let els = document.querySelectorAll('.size-buttons-buttonContainer button');
+    if (!els.length) els = document.querySelectorAll('button[class*="size-buttons-size-button"]');
     return els;
   }
 
   function isUnavailable(el) {
     if (el.style?.pointerEvents === 'none' || el.disabled) return true;
-    // Specific Myntra disabled class — only check the element itself, not parents,
-    // to avoid false positives from ancestor containers that also carry "disabled"
-    if ((el.className || '').includes('size-buttons-size-button-disabled')) return true;
+    // Use classList.contains for exact class matching — avoids substring false-positives
+    if (el.classList.contains('size-buttons-size-button-disabled')) return true;
     // Strike-through span is rendered inside OOS buttons
     if (el.querySelector('.size-buttons-size-strike-show')) return true;
-    // Generic OOS class names may live on parent containers
-    let node = el.parentElement;
-    for (let i = 0; i < 2 && node; i++, node = node.parentElement) {
-      const cls = node.className || '';
-      if (cls.includes('not-available') || cls.includes('outOfStock') || cls.includes('unavailable')) return true;
-    }
     return false;
   }
 
   /**
-   * Extracts just the size label, ignoring stock text like "1 left" that
-   * Myntra renders inside the same button element.
+   * Extracts just the size label, ignoring garment measurement text that
+   * Myntra renders in sibling elements inside the same container.
    */
   function sizeText(el) {
-    for (const node of el.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const t = node.textContent.trim();
-        if (t) return t;
-      }
-      if (node.nodeType === Node.ELEMENT_NODE && !node.className?.includes('stock')) {
-        const t = node.textContent.trim().split('\n')[0].trim();
-        if (t) return t;
-      }
-    }
+    // Myntra wraps the size label in a <p class="size-buttons-unified-size">
+    const p = el.querySelector('.size-buttons-unified-size');
+    if (p) return p.textContent.trim().split('\n')[0].trim();
     return el.textContent.trim().split('\n')[0].trim();
   }
 

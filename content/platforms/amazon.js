@@ -23,20 +23,21 @@ const AmazonPlatform = (() => {
    * Tries button grids (twister/variation) first, then dropdown selects.
    */
   function findSizeElements() {
-    // Inline twister — newer Amazon UI (most clothing on Amazon India)
-    const tileContainers = document.querySelectorAll(
-      '[id*="inline-twister"][id*="size"] .a-button:not(.a-button-toggle), ' +
-      '[data-a-input-name="size_name"] .a-button:not(.a-button-toggle), ' +
-      '[data-a-input-name="size"] .a-button:not(.a-button-toggle)'
+    // data-a-input-name IS on the .a-button element itself — use it directly
+    const byAttr = document.querySelectorAll(
+      '.a-button[data-a-input-name="size_name"]:not(.a-button-toggle), ' +
+      '.a-button[data-a-input-name="size"]:not(.a-button-toggle)'
     );
-    if (tileContainers.length) return tileContainers;
+    if (byAttr.length) return byAttr;
 
-    // Classic variation grid
-    const classic = document.querySelectorAll(
+    // Container-based selectors for both classic and inline-twister layouts
+    const byContainer = document.querySelectorAll(
       '#variation_size_name .a-button:not(.a-button-toggle), ' +
+      '#inline-twister-row-size_name .a-button:not(.a-button-toggle), ' +
+      '[id*="twister"][id*="size_name"] .a-button:not(.a-button-toggle), ' +
       '[id*="variation_size"] .a-button:not(.a-button-toggle)'
     );
-    if (classic.length) return classic;
+    if (byContainer.length) return byContainer;
 
     // Native select dropdown fallback
     const sel = document.querySelector(
