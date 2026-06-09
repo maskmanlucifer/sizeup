@@ -1,6 +1,7 @@
 /**
  * Chrome storage helpers.
- * Global functions — used by both content scripts and popup.
+ * Uses chrome.storage.sync so profiles are shared across devices.
+ * Global functions — used by both content scripts and popup via script tag.
  */
 
 const STORAGE_KEY = 'sizeup_data';
@@ -12,7 +13,7 @@ const DEFAULT_DATA = {
 
 function getStorageData() {
   return new Promise(resolve => {
-    chrome.storage.local.get(STORAGE_KEY, result => {
+    chrome.storage.sync.get(STORAGE_KEY, result => {
       resolve(result[STORAGE_KEY] || { ...DEFAULT_DATA });
     });
   });
@@ -20,7 +21,7 @@ function getStorageData() {
 
 function setStorageData(data) {
   return new Promise(resolve => {
-    chrome.storage.local.set({ [STORAGE_KEY]: data }, resolve);
+    chrome.storage.sync.set({ [STORAGE_KEY]: data }, resolve);
   });
 }
 
@@ -75,8 +76,8 @@ async function clearLearnMode() {
 /**
  * Called by content script after user picks their size on the product page.
  * @param {string} profileId
- * @param {string} size      - e.g. "M", "32", "UK 8"
- * @param {string} category  - "top" | "bottom" | "shoe"
+ * @param {string} size     - e.g. "M", "32", "UK 8"
+ * @param {string} category - "top" | "bottom" | "shoe"
  */
 async function saveLearned(profileId, size, category) {
   const data = await getStorageData();

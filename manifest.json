@@ -30,6 +30,10 @@
       "js": [
         "utils/size-charts.js",
         "utils/storage.js",
+        "content/platforms/myntra.js",
+        "content/platforms/flipkart.js",
+        "content/platforms/amazon.js",
+        "content/ui.js",
         "content/content.js"
       ],
       "run_at": "document_idle"

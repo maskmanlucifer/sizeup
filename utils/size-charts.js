@@ -29,8 +29,8 @@ const BOTTOMS_CHART = [
 ];
 
 /**
- * Shoe: foot length cm → UK / EU / US Men / US Women
- * UK size used as canonical, others derived.
+ * Shoe: foot length cm → UK / EU / US Men / US Women.
+ * UK size is canonical; others derived.
  */
 const SHOE_CHART = [
   { uk: '3',  eu: '36',    usM: '4',  usW: '5',  footLen: 22.3 },
@@ -73,44 +73,95 @@ function getShoeSize(footLenCm) {
  */
 function deriveSizes(m) {
   return {
-    top: getTopSize(m.chest),
+    top:    getTopSize(m.chest),
     bottom: getBottomSize(m.waist),
-    shoe: getShoeSize(m.shoeLength),
+    shoe:   getShoeSize(m.shoeLength),
   };
+}
+
+// ── Label helpers ─────────────────────────────────────────────────────────────
+
+/** @param {Set<string>} set @param {Object} row */
+function _addTopLabels(set, row) {
+  const a = row.alpha.toLowerCase();
+  const n = row.numeric;
+  set.add(a);
+  set.add(n);
+  set.add(`${a}/${n}`);
+  set.add(`${n}/${a}`);
+}
+
+/** @param {Set<string>} set @param {Object} row */
+function _addBottomLabels(set, row) {
+  set.add(row.label);
+}
+
+/** @param {Set<string>} set @param {Object} row */
+function _addShoeLabels(set, row) {
+  set.add(`uk ${row.uk}`);
+  set.add(`uk${row.uk}`);
+  set.add(row.eu);
+  set.add(`eu ${row.eu}`);
+  set.add(`eu-${row.eu}`);
+  set.add(`us ${row.usM}`);
+  set.add(`ind ${row.uk}`);
+  set.add(row.uk);
 }
 
 /**
  * Returns all normalized size strings a profile might appear as on a website.
  * Used by content scripts to match against product size options.
  * @param {Object} measurements
- * @returns {string[]}
+ * @returns {string[]} lowercase labels
  */
 function getSizeLabels(measurements) {
   const { top, bottom, shoe } = deriveSizes(measurements);
   const labels = new Set();
+  if (top)    _addTopLabels(labels, top);
+  if (bottom) _addBottomLabels(labels, bottom);
+  if (shoe)   _addShoeLabels(labels, shoe);
+  return [...labels].map(l => l.toLowerCase());
+}
+
+/**
+ * Returns exact size labels plus labels for adjacent sizes (±1 band).
+ * Adjacent matching handles brand-specific size variation — a garment tagged
+ * "M" on one brand may be labelled "L" on another for the same body measurement.
+ *
+ * @param {Object} measurements
+ * @returns {{ exact: string[], adjacent: string[] }} both arrays are lowercase
+ */
+function getSizeLabelsExtended(measurements) {
+  const { top, bottom, shoe } = deriveSizes(measurements);
+  const exact    = new Set();
+  const adjacent = new Set();
 
   if (top) {
-    labels.add(top.alpha.toLowerCase());
-    labels.add(top.numeric);
-    // Common compound formats: "l/42", "42/l"
-    labels.add(`${top.alpha.toLowerCase()}/${top.numeric}`);
-    labels.add(`${top.numeric}/${top.alpha.toLowerCase()}`);
+    const idx = TOPS_CHART.indexOf(top);
+    _addTopLabels(exact, top);
+    if (idx > 0)                      _addTopLabels(adjacent, TOPS_CHART[idx - 1]);
+    if (idx < TOPS_CHART.length - 1)  _addTopLabels(adjacent, TOPS_CHART[idx + 1]);
   }
   if (bottom) {
-    labels.add(bottom.label);
+    const idx = BOTTOMS_CHART.indexOf(bottom);
+    _addBottomLabels(exact, bottom);
+    if (idx > 0)                         _addBottomLabels(adjacent, BOTTOMS_CHART[idx - 1]);
+    if (idx < BOTTOMS_CHART.length - 1)  _addBottomLabels(adjacent, BOTTOMS_CHART[idx + 1]);
   }
   if (shoe) {
-    labels.add(`uk ${shoe.uk}`);
-    labels.add(`uk${shoe.uk}`);
-    labels.add(shoe.eu);
-    labels.add(`eu ${shoe.eu}`);
-    labels.add(`eu-${shoe.eu}`);
-    labels.add(`us ${shoe.usM}`);
-    labels.add(`ind ${shoe.uk}`);
-    labels.add(shoe.uk); // some Indian sites just show numeric
+    const idx = SHOE_CHART.indexOf(shoe);
+    _addShoeLabels(exact, shoe);
+    if (idx > 0)                      _addShoeLabels(adjacent, SHOE_CHART[idx - 1]);
+    if (idx < SHOE_CHART.length - 1)  _addShoeLabels(adjacent, SHOE_CHART[idx + 1]);
   }
 
-  return [...labels].map(l => l.toLowerCase());
+  // Exact labels take priority — remove overlap from adjacent
+  for (const l of exact) adjacent.delete(l);
+
+  return {
+    exact:    [...exact].map(l => l.toLowerCase()),
+    adjacent: [...adjacent].map(l => l.toLowerCase()),
+  };
 }
 
 /**
@@ -123,9 +174,7 @@ function getSizeLabels(measurements) {
 function getSizeMidpoint(sizeLabel, category) {
   const norm = sizeLabel.trim().toLowerCase();
   if (category === 'top') {
-    const row = TOPS_CHART.find(r =>
-      r.alpha.toLowerCase() === norm || r.numeric === norm
-    );
+    const row = TOPS_CHART.find(r => r.alpha.toLowerCase() === norm || r.numeric === norm);
     if (!row) return null;
     return row.max === Infinity ? row.min + 5 : (row.min + row.max) / 2;
   }
@@ -147,17 +196,17 @@ function getSizeMidpoint(sizeLabel, category) {
 const CATEGORY_FIELD = { top: 'chest', bottom: 'waist', shoe: 'shoeLength' };
 
 /**
- * Returns true if a site's size string matches any of the profile's sizes.
- * Handles partial matches, compound formats ("M/38"), and word boundaries.
- * @param {string} siteSize
- * @param {string[]} profileLabels - from getSizeLabels()
+ * Returns true if a site's size string matches any of the profile's size labels.
+ * Handles partial matches and compound formats like "M/38" or "42/L".
+ * @param {string} siteSize - raw text from the size element
+ * @param {string[]} profileLabels - from {@link getSizeLabels} or {@link getSizeLabelsExtended}
  * @returns {boolean}
  */
 function sizeMatches(siteSize, profileLabels) {
   const norm = siteSize.toLowerCase().trim().replace(/\s+/g, ' ');
   return profileLabels.some(label => {
     if (norm === label) return true;
-    // Compound: "m/38" → check each segment
+    // Compound like "m/38" or "42 / l" — check each segment individually
     const parts = norm.split(/[\/\-,\s]/);
     return parts.some(p => p.trim() === label);
   });
