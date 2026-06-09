@@ -40,11 +40,13 @@
       }
       #sizeup-bar .su-bar-logo {
         width: 22px; height: 22px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 5px;
-        font-size: 12px; font-weight: 800;
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
+      }
+      #sizeup-bar .su-bar-logo img {
+        width: 22px; height: 22px;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
       }
       #sizeup-bar .su-bar-profile {
         font-weight: 600;
@@ -167,8 +169,9 @@
     const bar = document.createElement('div');
     bar.id = BAR_ID;
 
+    const iconUrl = chrome.runtime.getURL('icons/icon48.png');
     bar.innerHTML = `
-      <div class="su-bar-logo">S</div>
+      <div class="su-bar-logo"><img src="${iconUrl}" alt="SizeUp" /></div>
       <div class="su-bar-profile">${profile.emoji} ${profile.name}</div>
       <div class="su-bar-sep">·</div>
       <div class="su-bar-size">Size ${sizeLabel}</div>
