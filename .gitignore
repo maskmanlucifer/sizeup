@@ -1,0 +1,21 @@
+# Generated icons (run icons/create-icons.html to generate these)
+icons/icon16.png
+icons/icon48.png
+icons/icon128.png
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node (if tooling is added later)
+node_modules/
+dist/
