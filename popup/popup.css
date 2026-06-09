@@ -98,7 +98,7 @@ body {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  margin-bottom: 10px;
+  margin-bottom: 10px; /* overridden in .section-label-row */
 }
 
 /* ── Member cards ───────────────────────────────────────────────────────── */
@@ -391,6 +391,66 @@ body {
 .modal-body .modal-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
 
 .modal-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+/* ── Section label row ───────────────────────────────────────────────────── */
+.section-label-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.section-label-row .section-label { margin-bottom: 0; }
+
+.member-count {
+  font-size: 11px; color: var(--muted);
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 999px; padding: 1px 8px;
+}
+
+/* ── Platform chips ──────────────────────────────────────────────────────── */
+.member-platforms {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;
+}
+
+.platform-chip {
+  font-size: 10px; color: #6B5FBB;
+  background: #EDE9FE; border-radius: 4px;
+  padding: 1px 5px; white-space: nowrap;
+}
+
+/* ── Inline delete confirm ───────────────────────────────────────────────── */
+.inline-confirm {
+  display: flex; align-items: center; gap: 5px;
+}
+
+.inline-confirm-label {
+  font-size: 11px; color: var(--muted); white-space: nowrap;
+}
+
+.btn-inline-cancel, .btn-inline-ok {
+  height: 24px; padding: 0 9px;
+  border-radius: 5px; font-size: 11px; font-weight: 500;
+  cursor: pointer; border: none; font-family: inherit;
+  transition: background 0.12s;
+}
+
+.btn-inline-cancel {
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-inline-cancel:hover { background: var(--border); }
+
+.btn-inline-ok {
+  background: #FEE2E2; color: var(--red);
+}
+.btn-inline-ok:hover { background: #FECACA; }
+
+/* ── Disabled add button ─────────────────────────────────────────────────── */
+.btn-primary:disabled {
+  background: #C4B5FD; cursor: not-allowed; opacity: 0.7;
+}
+
+/* ── Dim placeholders ────────────────────────────────────────────────────── */
+.mrow-input::placeholder { color: #C4C4CF; opacity: 1; }
+.input::placeholder      { color: #C4C4CF; opacity: 1; }
 
 /* ── Utility ─────────────────────────────────────────────────────────────── */
 .muted { color: var(--muted); }

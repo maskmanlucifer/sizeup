@@ -10,6 +10,10 @@ const derivedBox    = document.getElementById('derived-box');
 const derivedText   = document.getElementById('derived-sizes-text');
 const previewEmoji  = document.getElementById('preview-emoji');
 const warnBox       = document.getElementById('measure-warn');
+const btnAdd        = document.getElementById('btn-add');
+const memberCount   = document.getElementById('member-count');
+
+const MAX_MEMBERS = 10;
 
 // ── SVG icons ─────────────────────────────────────────────────────────────────
 
@@ -52,6 +56,13 @@ async function renderHome() {
     profileSelect.appendChild(opt);
   }
 
+  // Update add button and count badge
+  const atLimit = profiles.length >= MAX_MEMBERS;
+  btnAdd.disabled = atLimit;
+  btnAdd.title    = atLimit ? `Limit of ${MAX_MEMBERS} members reached` : '';
+  memberCount.textContent  = profiles.length ? `${profiles.length} / ${MAX_MEMBERS}` : '';
+  memberCount.hidden       = !profiles.length;
+
   membersList.innerHTML = '';
   if (!profiles.length) {
     emptyState.hidden = false;
@@ -69,12 +80,14 @@ function buildMemberCard(profile) {
 
   const sz       = deriveSizes(profile.measurements || {});
   const sizeLine = buildSizeLine(sz);
+  const platforms = buildPlatformLine(sz);
 
   card.innerHTML = `
     <div class="member-avatar">${profile.emoji}</div>
     <div class="member-info">
       <div class="member-name">${esc(profile.name)}</div>
       <div class="member-size">${sizeLine}</div>
+      ${platforms ? `<div class="member-platforms">${platforms}</div>` : ''}
     </div>
     <div class="member-actions">
       <button class="btn-icon" data-action="edit"   title="Edit">${ICON_EDIT}</button>
@@ -83,7 +96,7 @@ function buildMemberCard(profile) {
   `;
 
   card.querySelector('[data-action="edit"]').addEventListener('click', () => showForm(profile));
-  card.querySelector('[data-action="delete"]').addEventListener('click', () => handleDelete(profile.id, profile.name));
+  card.querySelector('[data-action="delete"]').addEventListener('click', () => showInlineConfirm(card, profile.id));
   return card;
 }
 
@@ -91,8 +104,26 @@ function buildSizeLine(sizes) {
   const parts = [];
   if (sizes.top)    parts.push(`<strong>${sizes.top.alpha} · ${sizes.top.numeric}</strong>`);
   if (sizes.bottom) parts.push(`Waist <strong>${sizes.bottom.label}</strong>`);
-  if (!parts.length) return '<span style="opacity:.5">No measurements yet</span>';
+  if (!parts.length) return '<span style="opacity:.4">No measurements yet</span>';
   return parts.join(' &nbsp;·&nbsp; ');
+}
+
+/**
+ * Shows platform-specific size labels as a subtle subtitle.
+ * e.g. "Myntra L · Flipkart L · Amazon L/42"
+ */
+function buildPlatformLine(sizes) {
+  if (!sizes.top && !sizes.bottom) return '';
+  const parts = [];
+  if (sizes.top) {
+    parts.push(`<span class="platform-chip">Myntra&nbsp;${sizes.top.alpha}</span>`);
+    parts.push(`<span class="platform-chip">Flipkart&nbsp;${sizes.top.alpha}</span>`);
+    parts.push(`<span class="platform-chip">Amazon&nbsp;${sizes.top.alpha}/${sizes.top.numeric}</span>`);
+  } else if (sizes.bottom) {
+    parts.push(`<span class="platform-chip">Myntra&nbsp;${sizes.bottom.label}</span>`);
+    parts.push(`<span class="platform-chip">Flipkart&nbsp;${sizes.bottom.label}</span>`);
+  }
+  return parts.join('');
 }
 
 // ── Form view ─────────────────────────────────────────────────────────────────
@@ -166,17 +197,23 @@ function readMeasurements() {
   return m;
 }
 
-// ── Save / Delete ─────────────────────────────────────────────────────────────
+// ── Save ──────────────────────────────────────────────────────────────────────
 
 async function handleSave() {
   const nameEl = document.getElementById('field-name');
   const name   = nameEl.value.trim();
   if (!name) { nameEl.focus(); return; }
 
+  // Enforce limit only when adding a new profile
+  if (!editingId) {
+    const data = await getStorageData();
+    if (data.profiles.length >= MAX_MEMBERS) return; // button is disabled at limit
+  }
+
   const profile = {
-    id: editingId || generateId(),
+    id:           editingId || generateId(),
     name,
-    emoji: selectedEmoji,
+    emoji:        selectedEmoji,
     measurements: readMeasurements(),
   };
 
@@ -184,17 +221,48 @@ async function handleSave() {
   showHome();
 }
 
-async function handleDelete(id, name) {
-  if (!confirm(`Remove ${name}?`)) return;
-  await deleteProfile(id);
-  renderHome();
-}
+// ── Inline delete confirmation ────────────────────────────────────────────────
 
+/**
+ * Replaces the card's action buttons with an inline "Remove?" prompt.
+ * Reverts on cancel; deletes on confirm.
+ */
+function showInlineConfirm(card, id) {
+  const actions = card.querySelector('.member-actions');
+  const original = actions.innerHTML;
+
+  actions.innerHTML = `
+    <div class="inline-confirm">
+      <span class="inline-confirm-label">Remove?</span>
+      <button class="btn-inline-cancel">Cancel</button>
+      <button class="btn-inline-ok">Remove</button>
+    </div>
+  `;
+
+  actions.querySelector('.btn-inline-cancel').addEventListener('click', () => {
+    actions.innerHTML = original;
+    // Re-attach listeners lost when innerHTML was replaced
+    const profileId = id;
+    const editBtn = actions.querySelector('[data-action="edit"]');
+    const delBtn  = actions.querySelector('[data-action="delete"]');
+    if (editBtn) editBtn.addEventListener('click', () => {
+      getStorageData().then(d => {
+        const p = d.profiles.find(p => p.id === profileId);
+        if (p) showForm(p);
+      });
+    });
+    if (delBtn) delBtn.addEventListener('click', () => showInlineConfirm(card, profileId));
+  });
+
+  actions.querySelector('.btn-inline-ok').addEventListener('click', () => {
+    deleteProfile(id).then(renderHome);
+  });
+}
 
 // ── Listeners ─────────────────────────────────────────────────────────────────
 
 function attachListeners() {
-  document.getElementById('btn-add').addEventListener('click', () => showForm());
+  btnAdd.addEventListener('click', () => showForm());
   document.getElementById('btn-back').addEventListener('click', showHome);
   document.getElementById('btn-cancel').addEventListener('click', showHome);
   document.getElementById('btn-save').addEventListener('click', handleSave);
@@ -215,7 +283,6 @@ function attachListeners() {
   ['field-chest', 'field-waist'].forEach(id => {
     document.getElementById(id).addEventListener('input', refreshDerived);
   });
-
 }
 
 // ── Util ──────────────────────────────────────────────────────────────────────
