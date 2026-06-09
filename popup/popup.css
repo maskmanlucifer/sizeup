@@ -253,7 +253,11 @@ body {
   transition: border-color 0.12s, background 0.12s;
 }
 
-.emoji-btn.active { border-color: var(--purple); background: var(--purple-light); }
+.emoji-btn.active {
+  border-color: transparent;
+  background: var(--purple-light);
+  box-shadow: 0 0 0 2px var(--purple);
+}
 
 /* ── Measurement rows ────────────────────────────────────────────────────── */
 .mrows {
@@ -315,14 +319,13 @@ body {
 .derived-main {
   font-size: 16px;
   font-weight: 700;
-  color: var(--purple);
+  color: #3B1FA8;
   letter-spacing: -0.3px;
 }
 
 .derived-hint {
   font-size: 10px;
-  color: var(--purple);
-  opacity: 0.6;
+  color: #6B5FBB;
   margin-top: 2px;
 }
 
