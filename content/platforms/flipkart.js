@@ -63,11 +63,15 @@ const FlipkartPlatform = (() => {
   }
 
   function isUnavailable(el) {
-    const cls = (el.className || '') + ' ' + (el.parentElement?.className || '');
-    if (cls.includes('_3f2I3K')) return true;
     if (el.style?.pointerEvents === 'none') return true;
     if (el.getAttribute('aria-disabled') === 'true') return true;
-    // swatchAttr-based elements: out-of-stock text uses grey colour (#707070)
+    // Walk up 3 levels — Flipkart may place the OOS class on a parent container
+    let node = el;
+    for (let i = 0; i < 3 && node; i++, node = node.parentElement) {
+      const cls = node.className || '';
+      if (cls.includes('_3f2I3K') || cls.includes('disabled') || cls.includes('unavailable')) return true;
+    }
+    // swatchAttr-based elements: OOS text div has grey colour (#707070)
     const textDiv = el.querySelector('div[style*="color"]');
     if (textDiv) {
       const c = textDiv.style.color || '';
