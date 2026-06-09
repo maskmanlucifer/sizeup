@@ -17,10 +17,10 @@
     const style = document.createElement('style');
     style.id = STYLES_ID;
     style.textContent = `
-      /* ── Floating listing bar (bottom-left) ── */
+      /* ── Floating listing bar (top-left) ── */
       #sizeup-bar {
         position: fixed;
-        bottom: 20px; left: 20px;
+        top: 70px; left: 20px;
         z-index: 2147483647;
         background: #5C35E8;
         color: #fff;
@@ -33,8 +33,8 @@
         animation: su-bar-in 0.18s ease;
       }
       @keyframes su-bar-in {
-        from { transform: translateY(10px); opacity: 0; }
-        to   { transform: translateY(0);    opacity: 1; }
+        from { transform: translateX(-10px); opacity: 0; }
+        to   { transform: translateX(0);     opacity: 1; }
       }
       #sizeup-bar .su-bar-head {
         display: flex; align-items: center; gap: 7px;
@@ -78,10 +78,10 @@
         margin-bottom: 6px;
       }
 
-      /* ── Floating banner (product pages / learn mode) ── */
+      /* ── Floating banner (product pages) ── */
       #sizeup-banner {
         position: fixed;
-        bottom: 20px; right: 20px;
+        top: 70px; left: 20px;
         z-index: 2147483647;
         background: #fff;
         border: 1.5px solid #E5E7EB;
@@ -96,8 +96,8 @@
         line-height: 1.4;
       }
       @keyframes su-in {
-        from { transform: translateY(8px); opacity: 0; }
-        to   { transform: translateY(0);   opacity: 1; }
+        from { transform: translateX(-10px); opacity: 0; }
+        to   { transform: translateX(0);     opacity: 1; }
       }
       #sizeup-banner .su-row { display: flex; align-items: flex-start; gap: 8px; }
       #sizeup-banner .su-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
@@ -119,16 +119,6 @@
       #sizeup-banner .su-secondary { background: #F3F4F6; color: #374151; }
       #sizeup-banner .su-secondary:hover { background: #E5E7EB; }
       #sizeup-banner .su-brand { font-size: 10px; color: #9CA3AF; text-align: right; margin-top: 8px; }
-      #sizeup-banner .su-learn-sizes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-      #sizeup-banner .su-size-opt {
-        height: 30px; padding: 0 12px;
-        border: 1.5px solid #E5E7EB; border-radius: 6px;
-        background: #fff; cursor: pointer;
-        font-size: 12px; font-weight: 500; font-family: inherit; color: #111827;
-        transition: border-color 0.12s, background 0.12s;
-      }
-      #sizeup-banner .su-size-opt:hover { border-color: #5C35E8; background: #EDE9FE; color: #5C35E8; }
-
       /* ── Size highlight on product pages ── */
       .sizeup-match {
         outline: 2.5px solid #5C35E8 !important;
@@ -428,12 +418,20 @@
       break;
     }
 
-    if (!matchEl) return;
-
     const sz = deriveSizes(profile.measurements || {});
     const label = sz.top    ? `${sz.top.alpha} / ${sz.top.numeric}` :
                   sz.bottom ? sz.bottom.label :
                   sz.shoe   ? `UK ${sz.shoe.uk}` : '';
+
+    if (!matchEl) {
+      // Size exists in derived sizes but isn't listed on this product at all
+      showBanner({
+        icon: '⚪',
+        msg: `${label || 'Your size'} not on this product`,
+        sub: `${profile.name}'s size isn't offered here`,
+      });
+      return;
+    }
 
     if (available) {
       showBanner({
@@ -465,85 +463,14 @@
     showBar({ profile, sizeLabel, facetValue, isFiltered });
   }
 
-  // ── Learn-from-purchase ───────────────────────────────────────────────────────
-
-  function detectCategory(texts) {
-    const n = texts.map(t => t.toLowerCase().trim());
-    if (n.some(t => /uk\s*\d|ind-\d/i.test(t))) return 'shoe';
-    if (n.length > 0 && n.every(t => /^\d{2}$/.test(t) && +t >= 24 && +t <= 44)) return 'bottom';
-    return 'top';
-  }
-
-  async function handleLearnMode(learnData) {
-    if (!onProductPage()) return;
-
-    await delay(800);
-
-    const els = findSizeElements();
-    if (!els.length) return;
-
-    const available = [];
-    for (const el of els) {
-      const text = sizeText(el);
-      if (text && !isUnavailable(el)) available.push(text);
-    }
-    if (!available.length) return;
-
-    const category = detectCategory(available);
-    const categoryLabel = { top: 'Tops', bottom: 'Bottoms', shoe: 'Shoes' }[category];
-
-    injectStyles();
-    removeBanner();
-
-    const el = document.createElement('div');
-    el.id = BANNER_ID;
-    el.innerHTML = `
-      <div class="su-row">
-        <span class="su-icon">📦</span>
-        <div class="su-body">
-          <div class="su-msg">Which size did you buy?</div>
-          <div class="su-sub">${categoryLabel} · tap your size</div>
-        </div>
-        <button class="su-close" title="Cancel">✕</button>
-      </div>
-      <div class="su-learn-sizes">
-        ${available.map(s => `<button class="su-size-opt" data-size="${s}">${s}</button>`).join('')}
-      </div>
-      <div class="su-brand">SizeUp</div>
-    `;
-
-    el.querySelector('.su-close').addEventListener('click', async () => {
-      await clearLearnMode();
-      removeBanner();
-    });
-
-    el.querySelectorAll('.su-size-opt').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const size = btn.dataset.size;
-        await saveLearned(learnData.profileId, size, category);
-        removeBanner();
-        showBanner({
-          icon: '✅',
-          msg: `Size ${size} (${categoryLabel}) saved!`,
-          sub: 'Reopen SizeUp to update the profile.',
-        });
-      });
-    });
-
-    document.body.appendChild(el);
-  }
-
   // ── Init ──────────────────────────────────────────────────────────────────────
 
   async function init() {
     if (!site()) return;
 
+    // Clear any stale learn-mode flag left over from older versions
     const data = await getStorageData();
-    if (data.learnMode) {
-      injectStyles();
-      await handleLearnMode(data.learnMode);
-      return;
-    }
+    if (data.learnMode) await clearLearnMode();
 
     const profile = await getActiveProfile();
     if (!profile) { cleanup(); return; }
