@@ -25,7 +25,7 @@
         border-radius: 14px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         font-size: 13px;
-        min-width: 210px; max-width: 248px;
+        min-width: 260px; max-width: 300px;
         animation: su-in 0.22s cubic-bezier(0.16,1,0.3,1);
       }
       @keyframes su-in {
@@ -118,8 +118,8 @@
       }
       #sizeup-banner .su-bpc {
         display: flex; align-items: center; gap: 9px;
-        border: 1px solid #F0EEFF; border-radius: 9px;
-        padding: 7px 10px; background: #FAFAFF;
+        border: 1px solid #F0EEFF; border-radius: 10px;
+        padding: 10px 12px; background: #FAFAFF;
       }
       #sizeup-banner .su-bpc-dot {
         width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
@@ -141,15 +141,6 @@
       #sizeup-banner .su-bpc-tag.avail   { background: #DCFCE7; color: #15803D; }
       #sizeup-banner .su-bpc-tag.unavail { background: #FEE2E2; color: #B91C1C; }
       #sizeup-banner .su-bpc-tag.unlisted { background: #F3F4F6; color: #6B7280; }
-      /* action button */
-      #sizeup-banner .su-actions { display: flex; gap: 6px; margin-top: 10px; }
-      #sizeup-banner .su-btn {
-        height: 30px; padding: 0 14px; border-radius: 8px;
-        font-size: 12px; font-weight: 600; cursor: pointer;
-        border: none; font-family: inherit; transition: opacity 0.15s;
-      }
-      #sizeup-banner .su-btn:hover { opacity: 0.85; }
-      #sizeup-banner .su-primary { background: #5C35E8; color: #fff; }
       #sizeup-banner .su-brand {
         font-size: 10px; color: #C4B5FD; text-align: right; margin-top: 9px;
       }
@@ -169,20 +160,21 @@
     document.getElementById(BAR_ID)?.remove();
   }
 
-  function showBar({ profile, allProfiles, isFiltered }) {
+  function showBar({ profile, allProfiles, activeFacets }) {
     removeBar();
     const bar = document.createElement('div');
     bar.id = BAR_ID;
 
-    const iconUrl    = chrome.runtime.getURL('icons/icon48.png');
-    const category   = getMyntraCategory();
+    const iconUrl  = chrome.runtime.getURL('icons/icon48.png');
+    const category = getMyntraCategory();
 
     const cardData = allProfiles.map(p => {
-      const mapped = getMyntraSizeFacet(p.measurements || {}, category);
-      const sz     = deriveSizes(p.measurements || {});
+      const mapped  = getMyntraSizeFacet(p.measurements || {}, category);
+      const sz      = deriveSizes(p.measurements || {});
       const szLabel = sz.top ? sz.top.alpha : sz.bottom ? sz.bottom.label : sz.shoe ? `UK${sz.shoe.uk}` : '?';
-      const checked = p.id === profile.id && isFiltered;
-      return { p, szLabel, facetValue: mapped?.facetValue || szLabel, checked };
+      const facetValue = mapped?.facetValue || szLabel;
+      const checked    = activeFacets.has(facetValue.toLowerCase());
+      return { p, szLabel, facetValue, checked };
     });
 
     const cards = cardData.map(({ p, szLabel, checked }) => `
@@ -202,12 +194,18 @@
     `;
 
     bar.querySelectorAll('.su-bar-pcard').forEach((card, i) => {
-      const { p, facetValue, checked } = cardData[i];
-      card.addEventListener('click', async () => {
+      const { facetValue, checked } = cardData[i];
+      card.addEventListener('click', () => {
         _navigating = true;
-        if (p.id !== profile.id) await setActiveProfile(p.id);
-        // Tap checked card = clear; tap any other = apply that profile's filter
-        location.href = checked ? buildClearUrl() : buildFilterUrl(facetValue);
+        // Toggle this card's facet in/out of the active set
+        const next = new Set(activeFacets);
+        if (checked) next.delete(facetValue.toLowerCase());
+        else next.add(facetValue.toLowerCase());
+        // Rebuild with original-case facet values for the URL
+        const nextValues = cardData
+          .filter(cd => next.has(cd.facetValue.toLowerCase()))
+          .map(cd => cd.facetValue);
+        location.href = buildFilterUrl(nextValues);
       });
     });
 
@@ -221,13 +219,12 @@
   }
 
   /**
-   * @param {{ results: Array<{profile, status, szLabel}>, selectEl: Element|null }} opts
+   * @param {{ results: Array<{profile, status, szLabel}> }} opts
    */
-  function showBanner({ results, selectEl }) {
+  function showBanner({ results }) {
     removeBanner();
     if (!results.length) return;
 
-    // Accent colour driven by best outcome across all profiles
     const best = results.find(r => r.status === 'avail') ||
                  results.find(r => r.status === 'unavail') ||
                  results[0];
@@ -256,16 +253,11 @@
           <button class="su-close" title="Dismiss">✕</button>
         </div>
         <div class="su-banner-profiles">${cards}</div>
-        ${selectEl ? `
-          <div class="su-actions">
-            <button class="su-btn su-primary" id="su-select">Select size</button>
-          </div>` : ''}
         <div class="su-brand">SizeUp</div>
       </div>
     `;
 
     el.querySelector('.su-close').addEventListener('click', removeBanner);
-    if (selectEl) el.querySelector('#su-select').addEventListener('click', () => { selectEl.click(); removeBanner(); });
     document.body.appendChild(el);
   }
 
@@ -325,34 +317,31 @@
 
   // ── URL filter helpers ────────────────────────────────────────────────────────
 
-  function buildFilterUrl(facetValue) {
-    const url = new URL(location.href);
-    const existing = url.searchParams.get('f') || '';
-    // Remove any prior size_facet, keep other active filters (brand, color, etc.)
-    const withoutSize = existing
-      .replace(/size_facet:[^|]*/gi, '')
-      .replace(/^\|+|\|+$/g, '')
-      .replace(/\|{2,}/g, '||');
-    url.searchParams.set('f', withoutSize ? `${withoutSize}||size_facet:${facetValue}` : `size_facet:${facetValue}`);
-    return url.toString();
-  }
-
-  function buildClearUrl() {
+  /**
+   * @param {string[]} facetValues - one or more size facet values; empty array clears the filter
+   */
+  function buildFilterUrl(facetValues) {
     const url = new URL(location.href);
     const existing = url.searchParams.get('f') || '';
     const withoutSize = existing
       .replace(/size_facet:[^|]*/gi, '')
       .replace(/^\|+|\|+$/g, '')
       .replace(/\|{2,}/g, '||');
-    if (withoutSize) url.searchParams.set('f', withoutSize);
-    else url.searchParams.delete('f');
+    if (!facetValues.length) {
+      if (withoutSize) url.searchParams.set('f', withoutSize);
+      else url.searchParams.delete('f');
+    } else {
+      url.searchParams.set('f', withoutSize ? `${withoutSize}||size_facet:${facetValues.join(',')}` : `size_facet:${facetValues.join(',')}`);
+    }
     return url.toString();
   }
 
-  function getCurrentFacet() {
+  /** @returns {Set<string>} lowercase active size facet values */
+  function getCurrentFacets() {
     const f = new URL(location.href).searchParams.get('f') || '';
     const m = f.match(/size_facet:([^|]+)/i);
-    return m ? m[1].trim() : null;
+    if (!m) return new Set();
+    return new Set(m[1].split(',').map(v => v.trim().toLowerCase()));
   }
 
   // ── Site detection ────────────────────────────────────────────────────────────
@@ -472,8 +461,6 @@
     const els = findSizeElements();
     if (!els.length) return;
 
-    let activeSelectEl = null;
-
     const results = allProfiles.map(p => {
       const labels = getSizeLabels(p.measurements || {});
       if (!labels.length) return null;
@@ -489,7 +476,6 @@
         const avail = !isUnavailable(el);
         if (p.id === profile.id) {
           el.classList.add('sizeup-match');
-          if (avail) activeSelectEl = el;
         }
         return { profile: p, status: avail ? 'avail' : 'unavail', szLabel };
       }
@@ -497,7 +483,7 @@
     }).filter(Boolean);
 
     if (!results.length) return;
-    showBanner({ results, selectEl: activeSelectEl });
+    showBanner({ results });
   }
 
   async function handleListing(profile, allProfiles) {
@@ -507,10 +493,9 @@
     const mapped   = getMyntraSizeFacet(profile.measurements || {}, category);
     if (!mapped) return;
 
-    const currentFacet = getCurrentFacet();
-    const isFiltered   = currentFacet?.toLowerCase() === mapped.facetValue.toLowerCase();
+    const activeFacets = getCurrentFacets();
 
-    showBar({ profile, allProfiles, isFiltered });
+    showBar({ profile, allProfiles, activeFacets });
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
