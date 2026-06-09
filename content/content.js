@@ -17,71 +17,50 @@
     const style = document.createElement('style');
     style.id = STYLES_ID;
     style.textContent = `
-      /* ── Persistent top bar (listing pages) ── */
+      /* ── Floating listing bar (bottom-left) ── */
       #sizeup-bar {
         position: fixed;
-        top: 0; left: 0; right: 0;
-        height: 38px;
+        bottom: 20px; left: 20px;
         z-index: 2147483647;
         background: #5C35E8;
         color: #fff;
-        display: flex;
-        align-items: center;
-        padding: 0 16px;
-        gap: 10px;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+        padding: 11px 14px 12px;
+        min-width: 170px; max-width: 220px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         font-size: 13px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-        animation: su-bar-in 0.2s ease;
+        animation: su-bar-in 0.18s ease;
       }
       @keyframes su-bar-in {
-        from { transform: translateY(-38px); }
-        to   { transform: translateY(0); }
+        from { transform: translateY(10px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
       }
-      #sizeup-bar .su-bar-logo {
-        width: 22px; height: 22px;
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0;
+      #sizeup-bar .su-bar-head {
+        display: flex; align-items: center; gap: 7px;
+        margin-bottom: 6px;
       }
       #sizeup-bar .su-bar-logo img {
-        width: 22px; height: 22px;
+        width: 18px; height: 18px;
         object-fit: contain;
         filter: brightness(0) invert(1);
+        display: block;
       }
       #sizeup-bar .su-bar-profile {
-        font-weight: 600;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-      #sizeup-bar .su-bar-sep {
-        opacity: 0.4;
-        flex-shrink: 0;
+        font-weight: 600; font-size: 13px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
       #sizeup-bar .su-bar-size {
-        opacity: 0.85;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-      #sizeup-bar .su-bar-spacer { flex: 1; }
-      #sizeup-bar .su-bar-status {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
-      }
-      #sizeup-bar .su-bar-filtered {
-        font-size: 12px;
-        background: rgba(255,255,255,0.15);
-        border-radius: 999px;
-        padding: 2px 10px;
-        white-space: nowrap;
+        font-size: 12px; opacity: 0.8;
+        margin-bottom: 9px;
       }
       #sizeup-bar .su-bar-btn {
-        height: 26px; padding: 0 12px;
-        border-radius: 999px;
+        display: block; width: 100%;
+        height: 28px; padding: 0 12px;
+        border-radius: 8px;
         font-size: 12px; font-weight: 600;
         cursor: pointer; border: none; font-family: inherit;
-        white-space: nowrap;
+        white-space: nowrap; text-align: center;
         transition: opacity 0.15s;
       }
       #sizeup-bar .su-bar-btn:hover { opacity: 0.85; }
@@ -93,6 +72,10 @@
         background: rgba(255,255,255,0.15);
         color: #fff;
         border: 1px solid rgba(255,255,255,0.3);
+      }
+      #sizeup-bar .su-bar-filtered {
+        font-size: 11px; opacity: 0.75;
+        margin-bottom: 6px;
       }
 
       /* ── Floating banner (product pages / learn mode) ── */
@@ -171,18 +154,16 @@
 
     const iconUrl = chrome.runtime.getURL('icons/icon48.png');
     bar.innerHTML = `
-      <div class="su-bar-logo"><img src="${iconUrl}" alt="SizeUp" /></div>
-      <div class="su-bar-profile">${profile.emoji} ${profile.name}</div>
-      <div class="su-bar-sep">·</div>
-      <div class="su-bar-size">Size ${sizeLabel}</div>
-      <div class="su-bar-spacer"></div>
-      <div class="su-bar-status">
-        ${isFiltered
-          ? `<span class="su-bar-filtered">✓ Filtered by ${facetValue}</span>
-             <button class="su-bar-btn su-bar-clear" id="su-clear">Clear filter</button>`
-          : `<button class="su-bar-btn su-bar-apply" id="su-apply">Filter by ${sizeLabel}</button>`
-        }
+      <div class="su-bar-head">
+        <div class="su-bar-logo"><img src="${iconUrl}" alt="SizeUp" /></div>
+        <div class="su-bar-profile">${profile.emoji} ${profile.name}</div>
       </div>
+      <div class="su-bar-size">Size ${sizeLabel}</div>
+      ${isFiltered
+        ? `<div class="su-bar-filtered">✓ Filtered</div>
+           <button class="su-bar-btn su-bar-clear" id="su-clear">Clear filter</button>`
+        : `<button class="su-bar-btn su-bar-apply" id="su-apply">Filter by ${sizeLabel}</button>`
+      }
     `;
 
     if (isFiltered) {
@@ -347,8 +328,12 @@
 
   function findSizeElements() {
     switch (site()) {
-      case 'myntra':
-        return document.querySelectorAll('.size-buttons-unified-size .size-buttons-size-button');
+      case 'myntra': {
+        // Product page: round size circles under SELECT SIZE
+        let els = document.querySelectorAll('.size-buttons-unified-size-container .size-buttons-size-button, .size-buttons-unified-size .size-buttons-size-button');
+        if (!els.length) els = document.querySelectorAll('[class*="size-buttons-size-button"]');
+        return els;
+      }
 
       case 'amazon': {
         const grid = document.querySelectorAll('#variation_size_name .a-button:not(.a-button-toggle)');
@@ -383,11 +368,11 @@
   }
 
   function isUnavailable(el) {
-    const cls = el.className || '';
+    const cls = (el.className || '') + ' ' + (el.parentElement?.className || '');
     switch (site()) {
       case 'myntra':
-        return cls.includes('size-buttons-size-button-not-available') ||
-               (el.parentElement?.className || '').includes('size-buttons-size-button-not-available');
+        return cls.includes('not-available') || cls.includes('outOfStock') ||
+               el.style?.pointerEvents === 'none' || el.disabled;
       case 'amazon':
         return cls.includes('a-button-disabled') || el.disabled;
       case 'flipkart':
@@ -404,7 +389,7 @@
   // ── Page handlers ─────────────────────────────────────────────────────────────
 
   async function handleProduct(profile) {
-    await delay(600);
+    await delay(900);
 
     const els = findSizeElements();
     if (!els.length) return;
