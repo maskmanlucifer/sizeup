@@ -39,9 +39,14 @@ const MyntraPlatform = (() => {
   }
 
   function isUnavailable(el) {
-    const cls = (el.className || '') + ' ' + (el.parentElement?.className || '');
-    return cls.includes('not-available') || cls.includes('outOfStock') ||
-           el.style?.pointerEvents === 'none' || el.disabled;
+    if (el.style?.pointerEvents === 'none' || el.disabled) return true;
+    // "not-available" may live on the button itself, its parent, or grandparent container
+    let node = el;
+    for (let i = 0; i < 3 && node; i++, node = node.parentElement) {
+      const cls = node.className || '';
+      if (cls.includes('not-available') || cls.includes('outOfStock') || cls.includes('unavailable')) return true;
+    }
+    return false;
   }
 
   /**

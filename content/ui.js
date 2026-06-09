@@ -147,11 +147,6 @@ const SizeUpUI = (() => {
         font-size: 10px; color: #C4B5FD; text-align: right; margin-top: 9px;
       }
 
-      /* ── Size highlight on product pages ── */
-      .sizeup-match {
-        outline: 2.5px solid #5C35E8 !important;
-        outline-offset: 2px;
-      }
     `;
     document.head.appendChild(style);
   }

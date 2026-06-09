@@ -68,7 +68,6 @@
         const text = platform.sizeText(el);
         if (!text || !sizeMatches(text, exact)) continue;
         const avail = !platform.isUnavailable(el);
-        if (p.id === profile.id) el.classList.add('sizeup-match');
         return { profile: p, status: avail ? 'avail' : 'unavail', matchType: 'exact', szLabel };
       }
 
