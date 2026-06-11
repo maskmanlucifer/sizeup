@@ -40,6 +40,27 @@ const SizeUpUI = (() => {
         to   { transform: translateY(0);    opacity: 1; }
       }
 
+      /* Looping bluish attention ray, swept diagonally across the card. */
+      #sizeup-bar::after, #sizeup-banner::after {
+        content: ''; position: absolute; inset: 0;
+        pointer-events: none; border-radius: inherit;
+        background: linear-gradient(115deg,
+          transparent 38%,
+          rgba(96,148,255,0.10) 47%,
+          rgba(120,170,255,0.24) 50%,
+          rgba(96,148,255,0.10) 53%,
+          transparent 62%);
+        background-size: 250% 100%; background-repeat: no-repeat;
+        animation: su-ray 3.4s linear infinite;
+      }
+      @keyframes su-ray {
+        0%   { background-position: 130% 0; }
+        100% { background-position: -30% 0; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #sizeup-bar::after, #sizeup-banner::after { display: none; }
+      }
+
       /* ── Shared header / footer ── */
       #sizeup-bar .su-head, #sizeup-banner .su-head {
         display: flex; align-items: center; gap: 7px;
