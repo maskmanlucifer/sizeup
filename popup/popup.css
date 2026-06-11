@@ -61,7 +61,7 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin
 input[type=number] { -moz-appearance: textfield; }
 
 @keyframes tipIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes toastIn { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ── Header ────────────────────────────────────────────────────────────── */
 .header {
@@ -398,7 +398,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* ── Toast ───────────────────────────────────────────────────────────────── */
 .toast {
-  position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
+  position: fixed; left: 16px; right: 16px; bottom: 16px;
   background: var(--ink); color: #fff;
   font-size: 13px; font-weight: 600;
   padding: 11px 16px; border-radius: 8px;
