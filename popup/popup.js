@@ -347,7 +347,6 @@ function _buildPrompt(name, m, sz) {
   lines.push('Usual sizes on Indian platforms:');
   if (sz.top)    lines.push(`- Tops: ${sz.top.alpha} (Indian numeric ${sz.top.numeric}) — works on Myntra, Flipkart, Amazon India`);
   if (sz.bottom) lines.push(`- Bottoms: Waist ${sz.bottom.label}`);
-  if (sz.shoe)   lines.push(`- Shoes: UK ${sz.shoe.uk} / EU ${sz.shoe.eu}`);
 
   return lines.join('\n');
 }

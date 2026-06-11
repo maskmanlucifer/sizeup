@@ -28,23 +28,6 @@ const BOTTOMS_CHART = [
   { label: '42', min: 104, max: Infinity },
 ];
 
-/**
- * Shoe: foot length cm → UK / EU / US Men / US Women.
- * UK size is canonical; others derived.
- */
-const SHOE_CHART = [
-  { uk: '3',  eu: '36',    usM: '4',  usW: '5',  footLen: 22.3 },
-  { uk: '4',  eu: '37',    usM: '5',  usW: '6',  footLen: 23.0 },
-  { uk: '5',  eu: '38',    usM: '6',  usW: '7',  footLen: 23.7 },
-  { uk: '6',  eu: '39-40', usM: '7',  usW: '8',  footLen: 24.4 },
-  { uk: '7',  eu: '40-41', usM: '8',  usW: '9',  footLen: 25.1 },
-  { uk: '8',  eu: '42',    usM: '9',  usW: '10', footLen: 25.7 },
-  { uk: '9',  eu: '43',    usM: '10', usW: '11', footLen: 26.4 },
-  { uk: '10', eu: '44',    usM: '11', usW: '12', footLen: 27.1 },
-  { uk: '11', eu: '45',    usM: '12', usW: '13', footLen: 27.8 },
-  { uk: '12', eu: '46',    usM: '13', usW: '14', footLen: 28.5 },
-];
-
 function getTopSize(chestCm) {
   if (!chestCm || chestCm <= 0) return null;
   return TOPS_CHART.find(r => chestCm >= r.min && chestCm <= r.max) || TOPS_CHART[TOPS_CHART.length - 1];
@@ -55,27 +38,15 @@ function getBottomSize(waistCm) {
   return BOTTOMS_CHART.find(r => waistCm >= r.min && waistCm <= r.max) || BOTTOMS_CHART[BOTTOMS_CHART.length - 1];
 }
 
-function getShoeSize(footLenCm) {
-  if (!footLenCm || footLenCm <= 0) return null;
-  let closest = SHOE_CHART[0];
-  let minDiff = Infinity;
-  for (const entry of SHOE_CHART) {
-    const diff = Math.abs(entry.footLen - footLenCm);
-    if (diff < minDiff) { minDiff = diff; closest = entry; }
-  }
-  return closest;
-}
-
 /**
- * Derives top, bottom, and shoe sizes from raw measurements.
+ * Derives top and bottom sizes from raw measurements.
  * @param {Object} m - measurements object from profile
- * @returns {{ top: Object|null, bottom: Object|null, shoe: Object|null }}
+ * @returns {{ top: Object|null, bottom: Object|null }}
  */
 function deriveSizes(m) {
   return {
     top:    getTopSize(m.chest),
     bottom: getBottomSize(m.waist),
-    shoe:   getShoeSize(m.shoeLength),
   };
 }
 
@@ -96,18 +67,6 @@ function _addBottomLabels(set, row) {
   set.add(row.label);
 }
 
-/** @param {Set<string>} set @param {Object} row */
-function _addShoeLabels(set, row) {
-  set.add(`uk ${row.uk}`);
-  set.add(`uk${row.uk}`);
-  set.add(row.eu);
-  set.add(`eu ${row.eu}`);
-  set.add(`eu-${row.eu}`);
-  set.add(`us ${row.usM}`);
-  set.add(`ind ${row.uk}`);
-  set.add(row.uk);
-}
-
 /**
  * Returns all normalized size strings a profile might appear as on a website.
  * Used by content scripts to match against product size options.
@@ -115,11 +74,10 @@ function _addShoeLabels(set, row) {
  * @returns {string[]} lowercase labels
  */
 function getSizeLabels(measurements) {
-  const { top, bottom, shoe } = deriveSizes(measurements);
+  const { top, bottom } = deriveSizes(measurements);
   const labels = new Set();
   if (top)    _addTopLabels(labels, top);
   if (bottom) _addBottomLabels(labels, bottom);
-  if (shoe)   _addShoeLabels(labels, shoe);
   return [...labels].map(l => l.toLowerCase());
 }
 
@@ -132,7 +90,7 @@ function getSizeLabels(measurements) {
  * @returns {{ exact: string[], adjacent: string[] }} both arrays are lowercase
  */
 function getSizeLabelsExtended(measurements) {
-  const { top, bottom, shoe } = deriveSizes(measurements);
+  const { top, bottom } = deriveSizes(measurements);
   const exact    = new Set();
   const adjacent = new Set();
 
@@ -148,12 +106,6 @@ function getSizeLabelsExtended(measurements) {
     if (idx > 0)                         _addBottomLabels(adjacent, BOTTOMS_CHART[idx - 1]);
     if (idx < BOTTOMS_CHART.length - 1)  _addBottomLabels(adjacent, BOTTOMS_CHART[idx + 1]);
   }
-  if (shoe) {
-    const idx = SHOE_CHART.indexOf(shoe);
-    _addShoeLabels(exact, shoe);
-    if (idx > 0)                      _addShoeLabels(adjacent, SHOE_CHART[idx - 1]);
-    if (idx < SHOE_CHART.length - 1)  _addShoeLabels(adjacent, SHOE_CHART[idx + 1]);
-  }
 
   // Exact labels take priority — remove overlap from adjacent
   for (const l of exact) adjacent.delete(l);
@@ -167,8 +119,8 @@ function getSizeLabelsExtended(measurements) {
 /**
  * Returns the midpoint measurement (cm) for a given size label and category.
  * Used to compute a suggested measurement when a user reports buying a specific size.
- * @param {string} sizeLabel - e.g. "M", "42", "32", "UK 8"
- * @param {'top'|'bottom'|'shoe'} category
+ * @param {string} sizeLabel - e.g. "M", "42", "32"
+ * @param {'top'|'bottom'} category
  * @returns {number|null} measurement in cm, or null if unrecognised
  */
 function getSizeMidpoint(sizeLabel, category) {
@@ -183,17 +135,11 @@ function getSizeMidpoint(sizeLabel, category) {
     if (!row) return null;
     return row.max === Infinity ? row.min + 5 : (row.min + row.max) / 2;
   }
-  if (category === 'shoe') {
-    const row = SHOE_CHART.find(r =>
-      `uk ${r.uk}` === norm || `uk${r.uk}` === norm || r.uk === norm
-    );
-    return row ? row.footLen : null;
-  }
   return null;
 }
 
 /** Maps category to the measurements key it should update. */
-const CATEGORY_FIELD = { top: 'chest', bottom: 'waist', shoe: 'shoeLength' };
+const CATEGORY_FIELD = { top: 'chest', bottom: 'waist' };
 
 /**
  * Returns true if a site's size string matches any of the profile's size labels.

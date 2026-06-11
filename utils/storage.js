@@ -72,8 +72,8 @@ async function clearLearnMode() {
 /**
  * Called by content script after user picks their size on the product page.
  * @param {string} profileId
- * @param {string} size     - e.g. "M", "32", "UK 8"
- * @param {string} category - "top" | "bottom" | "shoe"
+ * @param {string} size     - e.g. "M", "32"
+ * @param {string} category - "top" | "bottom"
  */
 async function saveLearned(profileId, size, category) {
   const data = await getStorageData();

@@ -18,7 +18,7 @@ const MyntraPlatform = (() => {
   function _isClothingUrl() {
     const path = location.pathname.toLowerCase();
     const NON_CLOTHING = /beauty|skincare|makeup|lipstick|mascara|foundation|kajal|kohl|blush|bronzer|concealer|primer|perfume|fragrance|deodorant|grooming|shampoo|conditioner|hair-|nail-|serum|moisturis|sunscreen|toner|facewash|face-wash|bags|handbag|wallet|purse|clutch|backpack|luggage|suitcase|trolley|watch|jewel|necklace|bracelet|earring|\-ring|pendant|brooch|bangle|anklet|home-|kitchen|furniture|decor|bedding|pillow|curtain|lamp|vase|toy|puzzle|board-game|sunglasses|eyewear|frames|spectacles|electronics|mobile|laptop|headphone|speaker|camera|tablet|stationery|book/i;
-    const CLOTHING     = /shirt|tshirt|t-shirt|top|blouse|kurta|kurti|sweatshirt|hoodie|sweater|jacket|coat|blazer|waistcoat|vest|polo|tunic|jean|trouser|pant|short|jogger|chino|legging|skirt|cargo|track-pant|dress|saree|salwar|suit|jumpsuit|romper|gown|dungaree|overall|shoe|sneaker|sandal|heel|loafer|boot|slipper|footwear|mule|clog|brief|boxer|bra|innerwear|underwear|lingerie|shapewear|sportswear|gymwear|swimwear|swimsuit|bikini|sherwani|dhoti|lungi|capri|ethnic|western|men-wear|women-wear|kids-wear|athleisure|activewear|nightwear|sleepwear|pyjama/i;
+    const CLOTHING     = /shirt|tshirt|t-shirt|top|blouse|kurta|kurti|sweatshirt|hoodie|sweater|jacket|coat|blazer|waistcoat|vest|polo|tunic|jean|trouser|pant|short|jogger|chino|legging|skirt|cargo|track-pant|dress|saree|salwar|suit|jumpsuit|romper|gown|dungaree|overall|brief|boxer|bra|innerwear|underwear|lingerie|shapewear|sportswear|gymwear|swimwear|swimsuit|bikini|sherwani|dhoti|lungi|capri|ethnic|western|men-wear|women-wear|kids-wear|athleisure|activewear|nightwear|sleepwear|pyjama/i;
     if (NON_CLOTHING.test(path)) return false;
     if (CLOTHING.test(path))     return true;
     return true; // ambiguous — default to showing
@@ -55,11 +55,10 @@ const MyntraPlatform = (() => {
 
   /**
    * Detects the clothing category from the URL path.
-   * @returns {'top'|'bottom'|'shoe'}
+   * @returns {'top'|'bottom'}
    */
   function _getCategory() {
     const path = location.pathname.toLowerCase();
-    if (/shoe|sneaker|sandal|heel|loafer|boot|slipper|footwear|mule|clog|kolhapuri/i.test(path)) return 'shoe';
     if (/jean|trouser|pant|short|jogger|chino|legging|skirt|bottom|cargo|track/i.test(path))     return 'bottom';
     return 'top';
   }
@@ -69,7 +68,6 @@ const MyntraPlatform = (() => {
    *
    * - Tops    → alpha label (XS / S / M / L / XL / XXL)
    * - Bottoms → waist numeric (28 / 30 / 32 / 34)
-   * - Shoes   → IND-{uk} prefix (IND-6, IND-7 … IND-12)
    *
    * @param {Object} measurements
    * @returns {{ label: string, facetValue: string } | null}
@@ -84,9 +82,6 @@ const MyntraPlatform = (() => {
       case 'bottom':
         if (!sizes.bottom) return null;
         return { label: sizes.bottom.label, facetValue: sizes.bottom.label };
-      case 'shoe':
-        if (!sizes.shoe) return null;
-        return { label: `UK ${sizes.shoe.uk}`, facetValue: `IND-${sizes.shoe.uk}` };
     }
     return null;
   }

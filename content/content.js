@@ -53,8 +53,7 @@
 
       const sz      = deriveSizes(p.measurements || {});
       const szLabel = sz.top    ? `${sz.top.alpha} · ${sz.top.numeric}` :
-                      sz.bottom ? `Waist ${sz.bottom.label}` :
-                      sz.shoe   ? `UK ${sz.shoe.uk}` : '?';
+                      sz.bottom ? `Waist ${sz.bottom.label}` : '?';
 
       // Try exact match first
       for (const el of els) {
@@ -97,7 +96,7 @@
       const facet = platform.getSizeFacet(p.measurements || {});
       if (!facet) return null;
       const sz      = deriveSizes(p.measurements || {});
-      const szLabel = sz.top ? sz.top.alpha : sz.bottom ? sz.bottom.label : sz.shoe ? `UK${sz.shoe.uk}` : '?';
+      const szLabel = sz.top ? sz.top.alpha : sz.bottom ? sz.bottom.label : '?';
       return {
         profile:    p,
         szLabel,
