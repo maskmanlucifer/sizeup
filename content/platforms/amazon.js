@@ -80,6 +80,9 @@ const AmazonPlatform = (() => {
    * @returns {{ label: string, facetValue: string } | null}
    */
   function getSizeFacet(measurements) {
+    // This facet only maps tops (men's international size); don't apply it on
+    // bottoms listings.
+    if (categoryFromPath(location.pathname) === 'bottom') return null;
     const { top } = deriveSizes(measurements);
     if (!top || !MEN_INTL_SIZE_IDS[top.alpha]) return null;
     return { label: top.alpha, facetValue: top.alpha };

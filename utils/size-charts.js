@@ -28,12 +28,30 @@ const BOTTOMS_CHART = [
   { label: '42', min: 104, max: Infinity },
 ];
 
+/**
+ * Bottom-wear keywords seen in product/listing URL slugs across platforms.
+ * Anything not matching is treated as a top (the common case for fashion).
+ */
+const _BOTTOM_KEYWORDS = /jean|trouser|pant|short|jogger|chino|legging|skirt|bottom|cargo|track|culotte|palazzo|capri|dhoti|pyjama|lower/i;
+
+/**
+ * Classifies a URL path as 'top' or 'bottom' wear. Used to keep top sizes and
+ * bottom sizes from cross-matching (e.g. a top's numeric 42 vs a 42" waist).
+ * @param {string} path - typically location.pathname
+ * @returns {'top'|'bottom'}
+ */
+function categoryFromPath(path) {
+  return _BOTTOM_KEYWORDS.test((path || '').toLowerCase()) ? 'bottom' : 'top';
+}
+
 function getTopSize(chestCm) {
+  chestCm = Math.round(parseFloat(chestCm));
   if (!chestCm || chestCm <= 0) return null;
   return TOPS_CHART.find(r => chestCm >= r.min && chestCm <= r.max) || TOPS_CHART[TOPS_CHART.length - 1];
 }
 
 function getBottomSize(waistCm) {
+  waistCm = Math.round(parseFloat(waistCm));
   if (!waistCm || waistCm <= 0) return null;
   return BOTTOMS_CHART.find(r => waistCm >= r.min && waistCm <= r.max) || BOTTOMS_CHART[BOTTOMS_CHART.length - 1];
 }
@@ -87,20 +105,23 @@ function getSizeLabels(measurements) {
  * "M" on one brand may be labelled "L" on another for the same body measurement.
  *
  * @param {Object} measurements
+ * @param {'top'|'bottom'} [category] - restrict labels to one category so a
+ *   top's numeric (e.g. 42) can't cross-match a bottom's waist size (42"). When
+ *   omitted, both categories are pooled.
  * @returns {{ exact: string[], adjacent: string[] }} both arrays are lowercase
  */
-function getSizeLabelsExtended(measurements) {
+function getSizeLabelsExtended(measurements, category) {
   const { top, bottom } = deriveSizes(measurements);
   const exact    = new Set();
   const adjacent = new Set();
 
-  if (top) {
+  if (top && category !== 'bottom') {
     const idx = TOPS_CHART.indexOf(top);
     _addTopLabels(exact, top);
     if (idx > 0)                      _addTopLabels(adjacent, TOPS_CHART[idx - 1]);
     if (idx < TOPS_CHART.length - 1)  _addTopLabels(adjacent, TOPS_CHART[idx + 1]);
   }
-  if (bottom) {
+  if (bottom && category !== 'top') {
     const idx = BOTTOMS_CHART.indexOf(bottom);
     _addBottomLabels(exact, bottom);
     if (idx > 0)                         _addBottomLabels(adjacent, BOTTOMS_CHART[idx - 1]);

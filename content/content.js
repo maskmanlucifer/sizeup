@@ -28,6 +28,27 @@
   let _bannerDismissed = false;
 
   /**
+   * Returns the best size element matching any of `labels`: an in-stock one if
+   * present, else the first match, else null. Prevents a sold-out duplicate
+   * from masking an available size.
+   * @param {NodeList|Element[]} els
+   * @param {string[]} labels
+   * @param {Object} platform
+   * @returns {Element|null}
+   */
+  function _pickMatch(els, labels, platform) {
+    if (!labels.length) return null;
+    let firstMatch = null;
+    for (const el of els) {
+      const text = platform.sizeText(el);
+      if (!text || !sizeMatches(text, labels)) continue;
+      if (!firstMatch) firstMatch = el;
+      if (!platform.isUnavailable(el)) return el;
+    }
+    return firstMatch;
+  }
+
+  /**
    * Finds size elements for all profiles, matches using exact then adjacent size
    * labels to handle brand-specific size variation, and shows the banner.
    *
@@ -47,28 +68,32 @@
     }
     if (!els.length) return;
 
+    // Restrict to the page's category so a top's numeric size can't cross-match
+    // a bottom's waist size (both use 38/40/42), and vice versa.
+    const category = categoryFromPath(location.pathname);
+
     const results = allProfiles.map(p => {
-      const { exact, adjacent } = getSizeLabelsExtended(p.measurements || {});
+      const { exact, adjacent } = getSizeLabelsExtended(p.measurements || {}, category);
       if (!exact.length && !adjacent.length) return null;
 
-      const sz      = deriveSizes(p.measurements || {});
-      const szLabel = sz.top    ? `${sz.top.alpha} · ${sz.top.numeric}` :
-                      sz.bottom ? `Waist ${sz.bottom.label}` : '?';
+      const sz = deriveSizes(p.measurements || {});
+      const szLabel = category === 'bottom'
+        ? (sz.bottom ? `Waist ${sz.bottom.label}` : '?')
+        : (sz.top ? `${sz.top.alpha} · ${sz.top.numeric}` : '?');
 
-      // Try exact match first
-      for (const el of els) {
-        const text = platform.sizeText(el);
-        if (!text || !sizeMatches(text, exact)) continue;
-        const avail = !platform.isUnavailable(el);
+      // Pick the element(s) matching exact labels, preferring an in-stock one so
+      // a sold-out duplicate doesn't mask an available size.
+      const exactEl = _pickMatch(els, exact, platform);
+      if (exactEl) {
+        const avail = !platform.isUnavailable(exactEl);
         return { profile: p, status: avail ? 'avail' : 'unavail', matchType: 'exact', szLabel };
       }
 
-      // Adjacent match — handles brand size variation (e.g. "L" here = "XL" on another brand)
-      for (const el of els) {
-        const text = platform.sizeText(el);
-        if (!text || !sizeMatches(text, adjacent)) continue;
-        const avail = !platform.isUnavailable(el);
-        return { profile: p, status: avail ? 'avail' : 'unavail', matchType: 'adjacent', szLabel, matchedSize: text.toUpperCase() };
+      // Adjacent match — handles brand size variation (e.g. "L" here = "XL" elsewhere)
+      const adjEl = _pickMatch(els, adjacent, platform);
+      if (adjEl) {
+        const avail = !platform.isUnavailable(adjEl);
+        return { profile: p, status: avail ? 'avail' : 'unavail', matchType: 'adjacent', szLabel, matchedSize: platform.sizeText(adjEl).toUpperCase() };
       }
 
       return { profile: p, status: 'unlisted', matchType: 'exact', szLabel };

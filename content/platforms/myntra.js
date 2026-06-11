@@ -54,16 +54,6 @@ const MyntraPlatform = (() => {
 
 
   /**
-   * Detects the clothing category from the URL path.
-   * @returns {'top'|'bottom'}
-   */
-  function _getCategory() {
-    const path = location.pathname.toLowerCase();
-    if (/jean|trouser|pant|short|jogger|chino|legging|skirt|bottom|cargo|track/i.test(path))     return 'bottom';
-    return 'top';
-  }
-
-  /**
    * Maps profile measurements to the Myntra size_facet value for the current category.
    *
    * - Tops    → alpha label (XS / S / M / L / XL / XXL)
@@ -74,7 +64,7 @@ const MyntraPlatform = (() => {
    */
   function getSizeFacet(measurements) {
     const sizes    = deriveSizes(measurements);
-    const category = _getCategory();
+    const category = categoryFromPath(location.pathname);
     switch (category) {
       case 'top':
         if (!sizes.top) return null;

@@ -104,18 +104,19 @@ const FlipkartPlatform = (() => {
   }
 
   /**
-   * Maps profile measurements to the Flipkart size facet value.
-   * Flipkart listing filters use plain alpha labels (S/M/L/XL) for tops
-   * and numeric waist for bottoms.
+   * Maps profile measurements to the Flipkart size facet value for the current
+   * page category — alpha (S/M/L/XL) on tops, numeric waist on bottoms — so a
+   * top size is never applied to a bottoms listing or vice versa.
    *
    * @param {Object} measurements
    * @returns {{ label: string, facetValue: string } | null}
    */
   function getSizeFacet(measurements) {
     const { top, bottom } = deriveSizes(measurements);
-    if (top)    return { label: top.alpha,    facetValue: top.alpha };
-    if (bottom) return { label: bottom.label, facetValue: bottom.label };
-    return null;
+    if (categoryFromPath(location.pathname) === 'bottom') {
+      return bottom ? { label: bottom.label, facetValue: bottom.label } : null;
+    }
+    return top ? { label: top.alpha, facetValue: top.alpha } : null;
   }
 
   /**
