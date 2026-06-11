@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SizeUp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
@@ -14,18 +17,15 @@
     <header class="header">
       <div class="logo">
         <div class="logo-icon-wrap">
-          <img src="../icons/icon48.png" class="logo-img" alt="SizeUp" />
+          <svg width="15" height="15" viewBox="0 0 16 16"><g fill="#fff"><rect x="3" y="9" width="2.4" height="4" rx="1.2"/><rect x="6.8" y="6" width="2.4" height="7" rx="1.2"/><rect x="10.6" y="3.5" width="2.4" height="9.5" rx="1.2"/></g></svg>
         </div>
-        <span class="logo-text">SizeUp</span>
+        <span class="logo-text">Size<span class="logo-up">Up</span></span>
+      </div>
+      <div class="badge-private">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Private
       </div>
     </header>
-
-    <div class="filter-bar">
-      <span class="filter-label">Shopping for</span>
-      <select id="profile-select" class="profile-select">
-        <option value="">None</option>
-      </select>
-    </div>
 
     <div class="section">
       <div class="section-label-row">
@@ -34,14 +34,27 @@
       </div>
       <div id="members-list" class="members-list"></div>
       <div id="empty-state" class="empty-state" hidden>
-        <div class="empty-icon">👕</div>
-        <p>No members yet</p>
-        <p class="muted">Add someone to start filtering by their size.</p>
+        <div class="empty-icon">
+          <svg width="42" height="42" viewBox="0 0 16 16"><g fill="#6C4DF6"><rect x="3" y="9" width="2.4" height="4" rx="1.2"/><rect x="6.8" y="6" width="2.4" height="7" rx="1.2"/><rect x="10.6" y="3.5" width="2.4" height="9.5" rx="1.2"/></g></svg>
+        </div>
+        <h3 class="empty-title">No one added yet</h3>
+        <p class="empty-sub">Add someone to start filtering shops by their size — sizes are worked out for you.</p>
+        <button id="btn-add-empty" class="btn btn-primary btn-full">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add your first member
+        </button>
       </div>
     </div>
 
     <div class="footer">
-      <button id="btn-add" class="btn btn-primary btn-full">+ Add family member</button>
+      <button id="btn-add" class="btn btn-primary btn-full">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add member
+      </button>
+      <div class="privacy-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 8-4-1-7-4-7-8V6Z"/><path d="M9 12l2 2 4-4"/></svg>
+        Saved only on this device — never uploaded.
+      </div>
     </div>
   </div>
 
@@ -49,95 +62,68 @@
   <div id="view-form" class="view" hidden>
 
     <header class="header header-form">
-      <button id="btn-back" class="btn-back">← Back</button>
+      <button id="btn-back" class="btn-icon-ghost" title="Back" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
       <span id="form-title" class="form-header-title">Add member</span>
     </header>
 
-    <div class="form-body">
+    <div class="form-body sz-scroll">
       <input type="hidden" id="field-id" />
 
-      <!-- Name -->
-      <div class="field">
-        <label class="label" for="field-name">Name</label>
-        <input id="field-name" class="input" type="text" placeholder="e.g. Dad, Priya, Aryan…" autocomplete="off" />
+      <!-- Name + avatar -->
+      <label class="label" for="field-name">Name</label>
+      <div class="name-row">
+        <div id="preview-avatar" class="name-avatar">🌸</div>
+        <input id="field-name" class="input name-input" type="text" placeholder="e.g. Priya" autocomplete="off" />
       </div>
 
-      <!-- Avatar -->
-      <div class="field">
-        <label class="label">Avatar</label>
-        <div class="emoji-picker" id="emoji-picker">
-          <button class="emoji-btn active" data-emoji="🌸" type="button">🌸</button>
-          <button class="emoji-btn" data-emoji="🦋" type="button">🦋</button>
-          <button class="emoji-btn" data-emoji="⭐" type="button">⭐</button>
-          <button class="emoji-btn" data-emoji="🌵" type="button">🌵</button>
-          <button class="emoji-btn" data-emoji="🦊" type="button">🦊</button>
-          <button class="emoji-btn" data-emoji="🍀" type="button">🍀</button>
-        </div>
+      <!-- Emoji picker -->
+      <div class="emoji-picker" id="emoji-picker">
+        <button class="emoji-btn active" data-emoji="🌸" type="button">🌸</button>
+        <button class="emoji-btn" data-emoji="🦋" type="button">🦋</button>
+        <button class="emoji-btn" data-emoji="⭐" type="button">⭐</button>
+        <button class="emoji-btn" data-emoji="🌵" type="button">🌵</button>
+        <button class="emoji-btn" data-emoji="🦊" type="button">🦊</button>
+        <button class="emoji-btn" data-emoji="🍀" type="button">🍀</button>
       </div>
 
-      <!-- Measurements -->
-      <div class="field">
-        <label class="label">
-          Measurements
-          <span class="info-icon" tabindex="0">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            <span class="info-tooltip">Body measurements, not clothing label sizes</span>
-          </span>
-        </label>
-        <div class="mrows" id="mrows">
-          <div class="mrow">
-            <span class="mrow-label">Height</span>
-            <input id="field-height" class="mrow-input" type="number" placeholder="175" min="50" max="250" />
-            <span class="mrow-unit">cm</span>
-          </div>
-          <div class="mrow">
-            <span class="mrow-label">Chest</span>
-            <input id="field-chest" class="mrow-input" type="number" placeholder="96" min="50" max="160" />
-            <span class="mrow-unit">cm</span>
-          </div>
-          <div class="mrow">
-            <span class="mrow-label">Waist</span>
-            <input id="field-waist" class="mrow-input" type="number" placeholder="80" min="40" max="160" />
-            <span class="mrow-unit">cm</span>
-          </div>
-          <div class="mrow">
-            <span class="mrow-label">Hip</span>
-            <input id="field-hip" class="mrow-input" type="number" placeholder="96" min="50" max="170" />
-            <span class="mrow-unit">cm</span>
-          </div>
-          <div class="mrow">
-            <span class="mrow-label">Shoulder</span>
-            <input id="field-shoulder" class="mrow-input" type="number" placeholder="44" min="20" max="80" />
-            <span class="mrow-unit">cm</span>
-          </div>
-          <div class="mrow" style="border-bottom:none">
-            <span class="mrow-label">Inseam</span>
-            <input id="field-inseam" class="mrow-input" type="number" placeholder="78" min="30" max="110" />
-            <span class="mrow-unit">cm</span>
-          </div>
-        </div>
+      <!-- Measurement note -->
+      <div class="measure-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6C4DF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <span>Enter <strong>body measurements</strong>, not clothing label sizes. Use a soft tape, in cm.</span>
       </div>
 
-      <!-- Derived sizes preview -->
-      <div id="derived-box" class="derived-box" hidden>
-        <div class="derived-preview">
-          <span id="preview-emoji" class="preview-emoji">🌸</span>
-          <div class="derived-info">
-            <div id="derived-sizes-text" class="derived-main"></div>
-            <div class="derived-hint">L = international &nbsp;·&nbsp; 42 = Indian numeric</div>
-          </div>
-        </div>
-      </div>
+      <!-- Measurement fields (generated) -->
+      <div class="fields" id="fields"></div>
 
       <!-- Warn box -->
       <div id="measure-warn" class="warn-box" hidden></div>
+    </div>
 
+    <!-- Sticky footer: suggested sizes + actions -->
+    <div class="form-footer">
+      <div class="suggested-head">
+        <span class="suggested-label">Suggested sizes</span>
+        <span class="suggested-live">updates live</span>
+      </div>
+      <div class="suggested-tiles">
+        <div class="tile"><div class="tile-cap">TOPS</div><div class="tile-val" id="der-top">—</div></div>
+        <div class="tile"><div class="tile-cap">WAIST</div><div class="tile-val" id="der-waist">—</div></div>
+        <div class="tile"><div class="tile-cap">HIP</div><div class="tile-val" id="der-hip">—</div></div>
+      </div>
       <div class="form-actions">
         <button id="btn-cancel" class="btn btn-secondary" type="button">Cancel</button>
-        <button id="btn-save" class="btn btn-primary" type="button">Save</button>
+        <button id="btn-save" class="btn btn-primary btn-full" type="button">Save member</button>
       </div>
     </div>
 
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast" hidden>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8BE6B6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+    <span id="toast-text"></span>
   </div>
 
   <script src="../utils/size-charts.js"></script>
