@@ -70,12 +70,14 @@ const SizeUpUI = (() => {
       }
       #sizeup-bar .su-bar-pcard {
         width: 100%; display: flex; align-items: center; gap: 10px;
-        padding: 8px; border: none; border-radius: 9px; background: #fff;
+        padding: 8px 10px; border: none; border-radius: 7px; background: #fff;
         cursor: pointer; text-align: left; font-family: inherit;
         transition: background 0.12s;
       }
       #sizeup-bar .su-bar-pcard:hover { background: #F4F2FE; }
       #sizeup-bar .su-bar-pcard.active { background: #F4F2FE; }
+      #sizeup-bar .su-bar-pcard:hover .su-pcard-size,
+      #sizeup-bar .su-bar-pcard.active .su-pcard-size { background: #fff; }
       #sizeup-bar .su-pcard-check {
         width: 17px; height: 17px; flex-shrink: 0;
         border: 1.5px solid #D5D7DF; border-radius: 5px; background: #fff;
@@ -89,7 +91,8 @@ const SizeUpUI = (() => {
       }
       #sizeup-bar .su-pcard-size {
         flex-shrink: 0; font-size: 11px; font-weight: 700; color: #5B6170;
-        background: #F3F4F7; padding: 2px 8px; border-radius: 6px;
+        background: #F3F4F7; min-width: 22px; height: 22px; padding: 0 6px;
+        border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
       }
 
       /* ── Product fit banner ── */
