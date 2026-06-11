@@ -12,7 +12,7 @@ const SizeUpUI = (() => {
   const MARK = `<span class="su-mark"><svg width="13" height="13" viewBox="0 0 16 16"><g fill="#fff"><rect x="3" y="9" width="2.4" height="4" rx="1.2"/><rect x="6.8" y="6" width="2.4" height="7" rx="1.2"/><rect x="10.6" y="3.5" width="2.4" height="9.5" rx="1.2"/></g></svg></span>`;
 
   /** Close (✕) icon. */
-  const X_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+  const X_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
 
   /** White check used in the selected filter checkbox. */
   const CHECK_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`;
@@ -40,23 +40,22 @@ const SizeUpUI = (() => {
         to   { transform: translateY(0);    opacity: 1; }
       }
 
-      /* Looping bluish attention ray, swept diagonally across the card. */
+      /* Looping bluish ray that travels around the card border. */
+      @property --su-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
       #sizeup-bar::after, #sizeup-banner::after {
         content: ''; position: absolute; inset: 0;
-        pointer-events: none; border-radius: inherit;
-        background: linear-gradient(115deg,
-          transparent 38%,
-          rgba(96,148,255,0.10) 47%,
-          rgba(120,170,255,0.24) 50%,
-          rgba(96,148,255,0.10) 53%,
-          transparent 62%);
-        background-size: 250% 100%; background-repeat: no-repeat;
-        animation: su-ray 3.4s linear infinite;
+        pointer-events: none; border-radius: inherit; padding: 1.5px;
+        background: conic-gradient(from var(--su-angle),
+          transparent 0%, transparent 72%,
+          rgba(91,141,239,0.0) 78%,
+          #5B8DEF 88%, #AFCBFF 93%, #5B8DEF 97%,
+          transparent 100%);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+                mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        animation: su-ray 3s linear infinite;
       }
-      @keyframes su-ray {
-        0%   { background-position: 130% 0; }
-        100% { background-position: -30% 0; }
-      }
+      @keyframes su-ray { to { --su-angle: 360deg; } }
       @media (prefers-reduced-motion: reduce) {
         #sizeup-bar::after, #sizeup-banner::after { display: none; }
       }
@@ -74,8 +73,8 @@ const SizeUpUI = (() => {
         font-size: 12.5px; font-weight: 800; flex: 1; white-space: nowrap;
       }
       #sizeup-bar .su-close, #sizeup-banner .su-close {
-        width: 20px; height: 20px; flex-shrink: 0;
-        border: none; background: transparent; border-radius: 5px;
+        width: 12px; height: 12px; flex-shrink: 0;
+        border: none; background: transparent; border-radius: 3px;
         color: #A6ABB5; cursor: pointer;
         display: flex; align-items: center; justify-content: center; transition: 0.12s;
       }
