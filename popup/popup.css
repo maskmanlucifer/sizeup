@@ -18,9 +18,9 @@
   --amber:         #B5710A;
   --amber-bg:      #FDF1E0;
   --red:           #D94A4A;
-  --radius-input:  10px;
-  --radius-card:   13px;
-  --radius-popup:  18px;
+  --radius-input:  8px;
+  --radius-card:   11px;
+  --radius-popup:  14px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -65,7 +65,7 @@ input[type=number] { -moz-appearance: textfield; }
 .logo-icon-wrap {
   width: 27px; height: 27px;
   background: var(--accent);
-  border-radius: 9px;
+  border-radius: 7px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
@@ -109,7 +109,7 @@ input[type=number] { -moz-appearance: textfield; }
   flex: 0 0 auto;
   width: 40px; height: 40px;
   background: var(--accent-soft);
-  border-radius: 12px;
+  border-radius: 10px;
   font-size: 21px;
   display: flex; align-items: center; justify-content: center;
 }
@@ -153,7 +153,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 .empty-icon {
   width: 88px; height: 88px;
-  border-radius: 26px;
+  border-radius: 20px;
   background: #F1EEFE;
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 6px;
@@ -179,7 +179,7 @@ input[type=number] { -moz-appearance: textfield; }
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 .btn {
   height: 42px; padding: 0 18px;
-  border-radius: 11px;
+  border-radius: 9px;
   font-size: 14px; font-weight: 700;
   font-family: inherit; cursor: pointer; border: none;
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
@@ -207,7 +207,7 @@ input[type=number] { -moz-appearance: textfield; }
 .btn-icon-ghost {
   width: 32px; height: 32px;
   border: none; background: transparent;
-  border-radius: 9px;
+  border-radius: 7px;
   color: var(--secondary); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: 0.12s; flex-shrink: 0;
@@ -227,7 +227,7 @@ input[type=number] { -moz-appearance: textfield; }
 .label { font-size: 12px; font-weight: 700; color: var(--secondary); display: block; margin-bottom: 7px; }
 
 .input {
-  height: 44px; border: 1px solid #E2E4EA; border-radius: 12px;
+  height: 44px; border: 1px solid #E2E4EA; border-radius: 10px;
   padding: 0 13px;
   font-size: 14px; font-weight: 600; font-family: inherit; color: var(--ink);
   background: #fff; outline: none; width: 100%;
@@ -241,7 +241,7 @@ input[type=number] { -moz-appearance: textfield; }
 .name-avatar {
   flex: 0 0 auto;
   width: 44px; height: 44px;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--accent-soft);
   display: flex; align-items: center; justify-content: center;
   font-size: 23px;
@@ -253,7 +253,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 .emoji-btn {
   width: 31px; height: 31px;
-  border: 1px solid var(--border); border-radius: 9px;
+  border: 1px solid var(--border); border-radius: 7px;
   background: #fff; font-size: 17px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: 0.1s;
@@ -265,7 +265,7 @@ input[type=number] { -moz-appearance: textfield; }
   display: flex; align-items: flex-start; gap: 8px;
   margin-top: 16px;
   background: var(--accent-soft); border: 1px solid var(--accent-border);
-  border-radius: 11px; padding: 10px 11px;
+  border-radius: 9px; padding: 10px 11px;
 }
 .measure-note svg { flex: 0 0 auto; margin-top: 1px; }
 .measure-note span { font-size: 12px; line-height: 1.45; color: #4B3FA0; font-weight: 600; }
@@ -292,7 +292,7 @@ input[type=number] { -moz-appearance: textfield; }
 .frow-input-wrap { position: relative; }
 .frow-input {
   width: 100%; height: 40px;
-  border: 1px solid #E2E4EA; border-radius: 10px;
+  border: 1px solid #E2E4EA; border-radius: 8px;
   padding: 0 40px 0 12px;
   font-size: 14px; font-weight: 600; font-family: inherit; color: var(--ink);
   background: #fff; outline: none;
@@ -312,7 +312,7 @@ input[type=number] { -moz-appearance: textfield; }
   top: calc(100% + 9px);
   z-index: 30;
   background: #fff; border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 14px 30px -10px rgba(28,28,55,0.32);
   padding: 11px;
   gap: 11px;
@@ -322,14 +322,14 @@ input[type=number] { -moz-appearance: textfield; }
 .frow.tip-up .tip { top: auto; bottom: calc(100% + 9px); }
 
 .tip-caret {
-  position: absolute; right: 16px;
+  position: absolute; right: 4px;
   width: 11px; height: 11px; background: #fff;
   border-left: 1px solid var(--border); border-top: 1px solid var(--border);
   top: -6px; transform: rotate(45deg);
 }
 .frow.tip-up .tip-caret { top: auto; bottom: -6px; transform: rotate(225deg); }
 
-.tip-fig { flex: 0 0 50px; height: 64px; background: var(--accent-soft); border-radius: 9px; padding: 5px; }
+.tip-fig { flex: 0 0 50px; height: 64px; background: var(--accent-soft); border-radius: 7px; padding: 5px; }
 .tip-body { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .tip-title { font-size: 12px; font-weight: 800; color: var(--ink); }
 .tip-text { font-size: 11.5px; line-height: 1.42; color: var(--secondary); }
@@ -339,7 +339,7 @@ input[type=number] { -moz-appearance: textfield; }
   margin-top: 14px;
   display: flex; align-items: flex-start; gap: 6px;
   background: #FEF9C3; border: 1px solid #FDE047;
-  border-radius: 10px; padding: 8px 10px;
+  border-radius: 8px; padding: 8px 10px;
   font-size: 12px; color: #713F12; line-height: 1.4;
 }
 
@@ -358,7 +358,7 @@ input[type=number] { -moz-appearance: textfield; }
 .tile {
   flex: 1; text-align: center;
   background: var(--accent-soft); border: 1px solid var(--accent-border);
-  border-radius: 10px; padding: 7px 4px;
+  border-radius: 8px; padding: 7px 4px;
 }
 .tile-cap { font-size: 9.5px; font-weight: 800; letter-spacing: 0.05em; color: var(--accent-cap); }
 .tile-val { font-size: 16px; font-weight: 800; color: var(--accent-deep); margin-top: 1px; }
@@ -385,7 +385,7 @@ input[type=number] { -moz-appearance: textfield; }
   position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%);
   background: var(--ink); color: #fff;
   font-size: 13px; font-weight: 600;
-  padding: 11px 16px; border-radius: 12px;
+  padding: 11px 16px; border-radius: 10px;
   box-shadow: 0 14px 32px -8px rgba(0,0,0,0.45);
   display: flex; align-items: center; gap: 9px;
   z-index: 200; animation: toastIn 0.16s ease;
