@@ -76,6 +76,12 @@ async function boot() {
   buildFields();
   attachListeners();
   await renderHome();
+
+  // Live-refresh the home list when sync pushes changes from another device.
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'sync' || !changes[STORAGE_KEY]) return;
+    if (!viewHome.hidden) renderHome();
+  });
 }
 
 /** Renders the six measurement field rows (with diagram tooltips) into #fields. */

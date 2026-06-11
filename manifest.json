@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "SizeUp",
-  "version": "0.1.0",
-  "description": "Never check a size chart again.",
-  "permissions": ["storage", "activeTab", "tabs"],
+  "version": "1.0.0",
+  "description": "Save your family's measurements once. SizeUp shows which sizes fit on Myntra, Amazon India & Flipkart.",
+  "permissions": ["storage"],
   "host_permissions": [
     "https://www.myntra.com/*",
     "https://www.amazon.in/*",
@@ -16,9 +16,6 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
-  },
-  "background": {
-    "service_worker": "background/service_worker.js"
   },
   "content_scripts": [
     {

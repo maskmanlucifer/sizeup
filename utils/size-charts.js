@@ -86,20 +86,6 @@ function _addBottomLabels(set, row) {
 }
 
 /**
- * Returns all normalized size strings a profile might appear as on a website.
- * Used by content scripts to match against product size options.
- * @param {Object} measurements
- * @returns {string[]} lowercase labels
- */
-function getSizeLabels(measurements) {
-  const { top, bottom } = deriveSizes(measurements);
-  const labels = new Set();
-  if (top)    _addTopLabels(labels, top);
-  if (bottom) _addBottomLabels(labels, bottom);
-  return [...labels].map(l => l.toLowerCase());
-}
-
-/**
  * Returns exact size labels plus labels for adjacent sizes (±1 band).
  * Adjacent matching handles brand-specific size variation — a garment tagged
  * "M" on one brand may be labelled "L" on another for the same body measurement.
@@ -138,35 +124,10 @@ function getSizeLabelsExtended(measurements, category) {
 }
 
 /**
- * Returns the midpoint measurement (cm) for a given size label and category.
- * Used to compute a suggested measurement when a user reports buying a specific size.
- * @param {string} sizeLabel - e.g. "M", "42", "32"
- * @param {'top'|'bottom'} category
- * @returns {number|null} measurement in cm, or null if unrecognised
- */
-function getSizeMidpoint(sizeLabel, category) {
-  const norm = sizeLabel.trim().toLowerCase();
-  if (category === 'top') {
-    const row = TOPS_CHART.find(r => r.alpha.toLowerCase() === norm || r.numeric === norm);
-    if (!row) return null;
-    return row.max === Infinity ? row.min + 5 : (row.min + row.max) / 2;
-  }
-  if (category === 'bottom') {
-    const row = BOTTOMS_CHART.find(r => r.label === norm);
-    if (!row) return null;
-    return row.max === Infinity ? row.min + 5 : (row.min + row.max) / 2;
-  }
-  return null;
-}
-
-/** Maps category to the measurements key it should update. */
-const CATEGORY_FIELD = { top: 'chest', bottom: 'waist' };
-
-/**
  * Returns true if a site's size string matches any of the profile's size labels.
  * Handles partial matches and compound formats like "M/38" or "42/L".
  * @param {string} siteSize - raw text from the size element
- * @param {string[]} profileLabels - from {@link getSizeLabels} or {@link getSizeLabelsExtended}
+ * @param {string[]} profileLabels - from {@link getSizeLabelsExtended}
  * @returns {boolean}
  */
 function sizeMatches(siteSize, profileLabels) {

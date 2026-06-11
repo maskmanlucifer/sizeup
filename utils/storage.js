@@ -54,36 +54,3 @@ async function deleteProfile(profileId) {
 function generateId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
-
-// ── Learn-from-purchase helpers ───────────────────────────────────────────────
-
-async function setLearnMode(profileId) {
-  const data = await getStorageData();
-  data.learnMode = { profileId };
-  await setStorageData(data);
-}
-
-async function clearLearnMode() {
-  const data = await getStorageData();
-  delete data.learnMode;
-  await setStorageData(data);
-}
-
-/**
- * Called by content script after user picks their size on the product page.
- * @param {string} profileId
- * @param {string} size     - e.g. "M", "32"
- * @param {string} category - "top" | "bottom"
- */
-async function saveLearned(profileId, size, category) {
-  const data = await getStorageData();
-  data.learnedResult = { profileId, size, category };
-  delete data.learnMode;
-  await setStorageData(data);
-}
-
-async function clearLearned() {
-  const data = await getStorageData();
-  delete data.learnedResult;
-  await setStorageData(data);
-}

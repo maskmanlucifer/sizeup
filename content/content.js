@@ -159,8 +159,6 @@
     if (!platform) return;
 
     const data = await getStorageData();
-    if (data.learnMode) await clearLearnMode();
-
     const { profiles } = data;
     if (!profiles?.length) { cleanup(); return; }
 
