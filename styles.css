@@ -153,6 +153,8 @@ nav {
 footer { padding: 40px 0 48px; margin-top: 40px; border-top: 1px solid var(--border); }
 .foot-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .foot-row .muted { color: var(--muted); font-size: 13.5px; }
+.foot-row .muted a { color: var(--accent); font-weight: 700; }
+.foot-row .muted a:hover { text-decoration: underline; }
 .foot-links { display: flex; gap: 18px; font-size: 14px; font-weight: 600; }
 .foot-links a:hover { color: var(--accent); }
 
