@@ -12,7 +12,7 @@ const SizeUpUI = (() => {
   const MARK = `<span class="su-mark"><svg width="13" height="13" viewBox="0 0 16 16"><g fill="#fff"><rect x="3" y="9" width="2.4" height="4" rx="1.2"/><rect x="6.8" y="6" width="2.4" height="7" rx="1.2"/><rect x="10.6" y="3.5" width="2.4" height="9.5" rx="1.2"/></g></svg></span>`;
 
   /** Close (✕) icon. */
-  const X_ICON = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+  const X_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
 
   /** White check used in the selected filter checkbox. */
   const CHECK_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`;
@@ -74,7 +74,7 @@ const SizeUpUI = (() => {
         font-size: 12.5px; font-weight: 800; flex: 1; white-space: nowrap;
       }
       #sizeup-bar .su-close, #sizeup-banner .su-close {
-        width: 12px; height: 20px; flex-shrink: 0;
+        width: 18px; height: 20px; flex-shrink: 0;
         border: none; background: transparent; border-radius: 3px;
         color: #A6ABB5; cursor: pointer;
         display: flex; align-items: center; justify-content: center; transition: 0.12s;
