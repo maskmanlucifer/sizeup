@@ -23,12 +23,13 @@ const SizeUpUI = (() => {
     style.id = STYLES_ID;
     style.textContent = `
       /* ── Shared base ── */
+      #sizeup-bar, #sizeup-bar *, #sizeup-banner, #sizeup-banner * { box-sizing: border-box; }
       #sizeup-bar, #sizeup-banner {
         position: fixed;
         top: 70px; left: 20px;
         z-index: 2147483647;
         background: #fff; color: #1C1E26;
-        border: 1px solid #E7E9EF; border-radius: 10px;
+        border: 1px solid #E7E9EF; border-radius: 8px;
         box-shadow: 0 18px 40px -12px rgba(28,28,55,0.34);
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         font-size: 13px; overflow: hidden;
@@ -66,7 +67,7 @@ const SizeUpUI = (() => {
         padding: 12px; border-bottom: 1px solid #F0F1F4;
       }
       #sizeup-bar .su-mark, #sizeup-banner .su-mark {
-        width: 22px; height: 22px; border-radius: 7px; background: #6C4DF6;
+        width: 22px; height: 22px; border-radius: 5px; background: #6C4DF6;
         display: flex; align-items: center; justify-content: center; flex-shrink: 0;
       }
       #sizeup-bar .su-head-title, #sizeup-banner .su-head-title {
@@ -90,7 +91,7 @@ const SizeUpUI = (() => {
       }
       #sizeup-bar .su-bar-pcard {
         width: 100%; display: flex; align-items: center; gap: 10px;
-        padding: 8px 14px 8px 10px; border: none; border-radius: 5px; background: #fff;
+        padding: 8px 14px 8px 10px; border: none; border-radius: 4px; background: #fff;
         cursor: pointer; text-align: left; font-family: inherit;
         transition: background 0.12s;
       }
