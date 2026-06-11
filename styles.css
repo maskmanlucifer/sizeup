@@ -45,7 +45,7 @@ nav {
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   box-shadow: 0 6px 16px -4px rgba(108,77,246,.5);
 }
-.logo .name { font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
+.logo .name { font-size: 20px; font-weight: 800; letter-spacing: -.02em; line-height: 1; position: relative; top: 1px; }
 .logo .name span { color: var(--accent); }
 
 .btn {
