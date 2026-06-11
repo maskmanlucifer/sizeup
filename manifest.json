@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "Save your family's measurements once. SizeUp shows which sizes fit on Myntra, Amazon India & Flipkart.",
   "permissions": ["storage"],
+  "background": {
+    "service_worker": "background/service_worker.js"
+  },
   "host_permissions": [
     "https://www.myntra.com/*",
     "https://www.amazon.in/*",

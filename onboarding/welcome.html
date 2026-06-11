@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome to SizeUp</title>
+<style>
+  @font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-weight: 400 800;
+    font-display: swap;
+    src: url('../popup/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    color: #1C1E26; -webkit-font-smoothing: antialiased; line-height: 1.5;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 40px 24px;
+    background:
+      radial-gradient(900px 600px at 82% -10%, #EFEBFF 0%, rgba(239,235,255,0) 58%),
+      radial-gradient(800px 560px at 6% 110%, #EAF0FF 0%, rgba(234,240,255,0) 55%),
+      #FBFAFF;
+  }
+  .card {
+    width: 100%; max-width: 560px; background: #fff;
+    border: 1px solid #E7E9EF; border-radius: 20px;
+    box-shadow: 0 24px 60px -20px rgba(28,28,55,.28);
+    padding: 36px 38px 34px; text-align: center;
+  }
+  .logo { display: inline-flex; align-items: center; gap: 11px; margin-bottom: 26px; }
+  .mark {
+    width: 40px; height: 40px; border-radius: 12px; background: #6C4DF6;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px -6px rgba(108,77,246,.5);
+  }
+  .word { font-size: 24px; font-weight: 800; letter-spacing: -.02em; line-height: 1; position: relative; top: 1px; }
+  .word span { color: #6C4DF6; }
+
+  .badge {
+    display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: #0A8F5C; background: #E4F6EE;
+    padding: 5px 11px; border-radius: 999px; margin-bottom: 14px;
+  }
+  h1 { font-size: 27px; font-weight: 800; letter-spacing: -.02em; }
+  .lead { font-size: 15.5px; color: #5B6170; margin-top: 10px; }
+  .lead b { color: #1C1E26; }
+
+  /* toolbar mock */
+  .mock {
+    margin: 26px auto 4px; max-width: 420px;
+    background: #F4F2FE; border: 1px solid #E7E1FC; border-radius: 14px; padding: 16px;
+  }
+  .mock-bar {
+    display: flex; align-items: center; gap: 8px; justify-content: flex-end;
+    background: #fff; border: 1px solid #E7E9EF; border-radius: 10px; padding: 8px 10px;
+  }
+  .ti { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #9AA0AD; }
+  .ti.puzzle { background: #F1F2F5; color: #5B6170; position: relative; }
+  .ti.puzzle::after {
+    content: ''; position: absolute; inset: -4px; border-radius: 11px;
+    border: 2px solid #6C4DF6; animation: pulse 1.6s ease-out infinite;
+  }
+  @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.35); } }
+  .dropdown {
+    margin-top: 10px; background: #fff; border: 1px solid #E7E9EF; border-radius: 10px;
+    box-shadow: 0 10px 24px -10px rgba(28,28,55,.22); overflow: hidden;
+  }
+  .drow { display: flex; align-items: center; gap: 10px; padding: 9px 11px; }
+  .drow + .drow { border-top: 1px solid #F0F1F4; }
+  .drow.active { background: #F4F2FE; }
+  .dmark { width: 22px; height: 22px; border-radius: 7px; background: #6C4DF6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .dname { flex: 1; text-align: left; font-size: 13px; font-weight: 700; }
+  .dghost { width: 22px; height: 22px; border-radius: 6px; background: #EDEEF2; }
+  .pin {
+    width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    color: #6C4DF6; background: #EFE9FE;
+  }
+
+  ol { text-align: left; max-width: 420px; margin: 24px auto 0; padding: 0; list-style: none; counter-reset: s; }
+  ol li { position: relative; padding: 9px 0 9px 40px; font-size: 14.5px; color: #3A3F4B; counter-increment: s; }
+  ol li::before {
+    content: counter(s); position: absolute; left: 0; top: 7px;
+    width: 26px; height: 26px; border-radius: 999px; background: #6C4DF6; color: #fff;
+    font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+  }
+  ol li b { color: #1C1E26; }
+
+  .foot {
+    margin-top: 26px; padding-top: 20px; border-top: 1px solid #F0F1F4;
+    font-size: 14px; color: #5B6170;
+  }
+  .foot b { color: #6C4DF6; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <span class="mark"><svg width="22" height="22" viewBox="0 0 16 16"><g fill="#fff"><rect x="3" y="9" width="2.4" height="4" rx="1.2"/><rect x="6.8" y="6" width="2.4" height="7" rx="1.2"/><rect x="10.6" y="3.5" width="2.4" height="9.5" rx="1.2"/></g></svg></span>
+      <span class="word">Size<span>Up</span></span>
+    </div>
+
+    <div class="badge">Installed</div>
+    <h1>Pin SizeUp to your toolbar</h1>
+    <p class="lead">Pinning keeps SizeUp <b>one click away</b> — so you can add a family member's sizes and check fits without digging through menus.</p>
+
+    <!-- toolbar / pin mock -->
+    <div class="mock">
+      <div class="mock-bar">
+        <div class="ti puzzle" title="Extensions">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11H19V7a2 2 0 0 0-2-2h-4V3.5a2.5 2.5 0 0 0-5 0V5H4a2 2 0 0 0-2 2v3.8h1.5a2.2 2.2 0 1 1 0 4.4H2V19a2 2 0 0 0 2 2h3.8v-1.5a2.2 2.2 0 1 1 4.4 0V21H17a2 2 0 0 0 2-2v-4h1.5a2.5 2.5 0 0 0 0-5Z"/></svg>
+        </div>
+      </div>
+      <div class="dropdown">
+        <div class="drow active">
+          <span class="dmark"><svg width="13" height="13" viewBox="0 0 16 16"><g fill="#fff"><rect x="3" y="9" width="2.4" height="4" rx="1.2"/><rect x="6.8" y="6" width="2.4" height="7" rx="1.2"/><rect x="10.6" y="3.5" width="2.4" height="9.5" rx="1.2"/></g></svg></span>
+          <span class="dname">SizeUp</span>
+          <span class="pin" title="Pin">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 3l5 5-2 2-1-1-4 4v4l-2 2-3-3-4 4-1-1 4-4-3-3 2-2h4l4-4-1-1 2-2z"/></svg>
+          </span>
+        </div>
+        <div class="drow">
+          <span class="dghost"></span>
+          <span class="dname" style="color:#9AA0AD">Another extension</span>
+          <span class="pin" style="background:transparent;color:#C4C9D2"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 3l5 5-2 2-1-1-4 4v4l-2 2-3-3-4 4-1-1 4-4-3-3 2-2h4l4-4-1-1 2-2z"/></svg></span>
+        </div>
+      </div>
+    </div>
+
+    <ol>
+      <li>Click the <b>puzzle-piece</b> (Extensions) icon at the top-right of Chrome.</li>
+      <li>Find <b>SizeUp</b> in the list.</li>
+      <li>Click the <b>pin</b> icon so SizeUp stays in your toolbar.</li>
+    </ol>
+
+    <div class="foot">Then click the <b>SizeUp icon</b> any time to add a family member and start finding fits.</div>
+  </div>
+</body>
+</html>
