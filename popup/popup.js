@@ -185,8 +185,8 @@ function buildChips(m) {
   const sz    = deriveSizes(m);
   const chips = [];
   if (sz.top) chips.push(`Tops ${sz.top.alpha}`);
-  if (m.waist) chips.push(`Waist ${inches(m.waist)}"`);
-  if (m.hip)   chips.push(`Hip ${inches(m.hip)}"`);
+  if (m.waist) chips.push(`Waist ${inches(m.waist)} in`);
+  if (m.hip)   chips.push(`Hip ${inches(m.hip)} in`);
   if (!chips.length) return '<span class="chip empty">No measurements yet</span>';
   return chips.map(c => `<span class="chip">${c}</span>`).join('');
 }
@@ -228,8 +228,8 @@ function refreshDerived() {
 
   const sizes = deriveSizes(m);
   derTop.textContent   = sizes.top ? sizes.top.alpha : '—';
-  derWaist.textContent = m.waist ? `${inches(m.waist)}"` : '—';
-  derHip.textContent   = m.hip   ? `${inches(m.hip)}"`   : '—';
+  derWaist.textContent = m.waist ? `${inches(m.waist)} in` : '—';
+  derHip.textContent   = m.hip   ? `${inches(m.hip)} in`   : '—';
 }
 
 function refreshWarning(m) {
