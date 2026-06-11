@@ -74,8 +74,8 @@ const SizeUpUI = (() => {
         font-size: 12.5px; font-weight: 800; flex: 1; white-space: nowrap;
       }
       #sizeup-bar .su-close, #sizeup-banner .su-close {
-        width: 18px; height: 20px; flex-shrink: 0;
-        border: none; background: transparent; border-radius: 3px;
+        width: 24px; height: 24px; flex-shrink: 0; padding: 0;
+        border: none; background: transparent; border-radius: 5px;
         color: #A6ABB5; cursor: pointer;
         display: flex; align-items: center; justify-content: center; transition: 0.12s;
       }
