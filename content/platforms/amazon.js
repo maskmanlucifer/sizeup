@@ -6,8 +6,6 @@
  */
 const AmazonPlatform = (() => {
 
-  // ── Page detection ──────────────────────────────────────────────────────────
-
   function onProductPage() {
     return location.pathname.includes('/dp/');
   }
@@ -15,8 +13,6 @@ const AmazonPlatform = (() => {
   function onListingPage() {
     return /^\/s/.test(location.pathname) || location.search.includes('k=');
   }
-
-  // ── Product page ────────────────────────────────────────────────────────────
 
   /**
    * Amazon renders sizes in multiple ways depending on the listing type.
@@ -62,8 +58,6 @@ const AmazonPlatform = (() => {
     if (swatchText) return swatchText.textContent.trim();
     return (el.querySelector('.a-button-text') || el).textContent.trim();
   }
-
-  // ── Listing filter ─────────────────────────────────────────────────────────
 
   /**
    * Confirmed size IDs for men's international sizes on amazon.in.
@@ -131,8 +125,6 @@ const AmazonPlatform = (() => {
     else       url.searchParams.delete('rh');
     return url.toString();
   }
-
-  // ── Public interface ────────────────────────────────────────────────────────
 
   return { onProductPage, onListingPage, findSizeElements, isUnavailable, sizeText, getSizeFacet, getCurrentFilters, buildFilterUrl };
 })();

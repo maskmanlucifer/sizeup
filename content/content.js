@@ -8,8 +8,6 @@
 (function () {
   'use strict';
 
-  // ── Platform registry ───────────────────────────────────────────────────────
-
   const PLATFORMS = {
     myntra:   MyntraPlatform,
     flipkart: FlipkartPlatform,
@@ -25,22 +23,17 @@
     return null;
   }
 
-  // ── Session dismissal state ─────────────────────────────────────────────────
-
   // Once a widget is dismissed, it stays hidden for the rest of the tab session
   let _barDismissed    = false;
   let _bannerDismissed = false;
-
-  // ── Product page handler ────────────────────────────────────────────────────
 
   /**
    * Finds size elements for all profiles, matches using exact then adjacent size
    * labels to handle brand-specific size variation, and shows the banner.
    *
-   * @param {Object}   profile     - active profile
    * @param {Object[]} allProfiles - all profiles to display
    */
-  async function handleProduct(profile, allProfiles) {
+  async function handleProduct(allProfiles) {
     // Amazon renders its size twister late — give it extra time
     const platform = getPlatform();
     const isAmazon = location.hostname.includes('amazon');
@@ -90,21 +83,14 @@
     });
   }
 
-  // ── Listing page handler ────────────────────────────────────────────────────
-
   /**
    * Builds profile card data for the listing bar and wires up toggle clicks.
    * Each card click toggles that profile's size facet in/out of the URL filter.
    *
-   * @param {Object}   profile     - active profile
    * @param {Object[]} allProfiles
    */
-  async function handleListing(profile, allProfiles) {
+  async function handleListing(allProfiles) {
     const platform = getPlatform();
-
-    // Only show bar when the platform supports listing filters
-    if (!platform.getSizeFacet(profile.measurements || {})) return;
-
     const activeFacets = platform.getCurrentFilters();
 
     const cardData = allProfiles.map(p => {
@@ -138,8 +124,6 @@
     });
   }
 
-  // ── Init + SPA watcher ──────────────────────────────────────────────────────
-
   function cleanup() {
     SizeUpUI.removeBar();
     SizeUpUI.removeBanner();
@@ -153,19 +137,18 @@
     const data = await getStorageData();
     if (data.learnMode) await clearLearnMode();
 
-    const { profiles, activeProfileId } = data;
-    const profile = profiles?.find(p => p.id === activeProfileId);
-    if (!profile) { cleanup(); return; }
+    const { profiles } = data;
+    if (!profiles?.length) { cleanup(); return; }
 
     SizeUpUI.injectStyles();
     SizeUpUI.clearHighlights();
 
     if (platform.onProductPage()) {
       SizeUpUI.removeBar();
-      if (!_bannerDismissed) await handleProduct(profile, profiles);
+      if (!_bannerDismissed) await handleProduct(profiles);
     } else if (platform.onListingPage()) {
       SizeUpUI.removeBanner();
-      if (!_barDismissed) await handleListing(profile, profiles);
+      if (!_barDismissed) await handleListing(profiles);
     }
   }
 

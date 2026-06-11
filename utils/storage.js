@@ -8,7 +8,6 @@ const STORAGE_KEY = 'sizeup_data';
 
 const DEFAULT_DATA = {
   profiles: [],
-  activeProfileId: null,
 };
 
 function getStorageData() {
@@ -36,12 +35,6 @@ function setStorageData(data) {
   });
 }
 
-async function getActiveProfile() {
-  const data = await getStorageData();
-  if (!data.activeProfileId) return null;
-  return data.profiles.find(p => p.id === data.activeProfileId) || null;
-}
-
 async function saveProfile(profile) {
   const data = await getStorageData();
   const idx = data.profiles.findIndex(p => p.id === profile.id);
@@ -54,14 +47,6 @@ async function saveProfile(profile) {
 async function deleteProfile(profileId) {
   const data = await getStorageData();
   data.profiles = data.profiles.filter(p => p.id !== profileId);
-  if (data.activeProfileId === profileId) data.activeProfileId = null;
-  await setStorageData(data);
-  return data;
-}
-
-async function setActiveProfile(profileId) {
-  const data = await getStorageData();
-  data.activeProfileId = profileId || null;
   await setStorageData(data);
   return data;
 }

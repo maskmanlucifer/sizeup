@@ -6,9 +6,6 @@
  * Multiple sizes:     `?f=brand:Puma||size_facet:L,XL`
  */
 const MyntraPlatform = (() => {
-
-  // ── Page detection ──────────────────────────────────────────────────────────
-
   function onProductPage() {
     return /\/\d+\/buy/.test(location.pathname);
   }
@@ -26,8 +23,6 @@ const MyntraPlatform = (() => {
     if (CLOTHING.test(path))     return true;
     return true; // ambiguous — default to showing
   }
-
-  // ── Product page ────────────────────────────────────────────────────────────
 
   function findSizeElements() {
     // Target button elements inside their containers — avoids matching ancestor divs
@@ -57,7 +52,6 @@ const MyntraPlatform = (() => {
     return el.textContent.trim().split('\n')[0].trim();
   }
 
-  // ── Listing filter ──────────────────────────────────────────────────────────
 
   /**
    * Detects the clothing category from the URL path.
@@ -132,8 +126,6 @@ const MyntraPlatform = (() => {
     }
     return url.toString();
   }
-
-  // ── Public interface ────────────────────────────────────────────────────────
 
   return { onProductPage, onListingPage, findSizeElements, isUnavailable, sizeText, getSizeFacet, getCurrentFilters, buildFilterUrl };
 })();

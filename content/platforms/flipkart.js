@@ -11,8 +11,6 @@
  */
 const FlipkartPlatform = (() => {
 
-  // ── Page detection ──────────────────────────────────────────────────────────
-
   function onProductPage() {
     return /\/p\/[a-z0-9]+/i.test(location.pathname);
   }
@@ -23,8 +21,6 @@ const FlipkartPlatform = (() => {
     const sid = new URLSearchParams(location.search).get('sid') || '';
     return sid.startsWith('clo');
   }
-
-  // ── Product page ────────────────────────────────────────────────────────────
 
   /**
    * Flipkart renders size swatches as `<a>` tags.
@@ -107,8 +103,6 @@ const FlipkartPlatform = (() => {
     return el.textContent.trim().split('\n')[0].trim();
   }
 
-  // ── Listing filter ──────────────────────────────────────────────────────────
-
   /**
    * Maps profile measurements to the Flipkart size facet value.
    * Flipkart listing filters use plain alpha labels (S/M/L/XL) for tops
@@ -165,8 +159,6 @@ const FlipkartPlatform = (() => {
   function _safeDecode(v) {
     try { return decodeURIComponent(v); } catch (_) { return v; }
   }
-
-  // ── Public interface ────────────────────────────────────────────────────────
 
   return { onProductPage, onListingPage, findSizeElements, isUnavailable, sizeText, getSizeFacet, getCurrentFilters, buildFilterUrl };
 })();

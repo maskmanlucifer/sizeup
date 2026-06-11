@@ -8,8 +8,6 @@ const SizeUpUI = (() => {
   const BANNER_ID  = 'sizeup-banner';
   const STYLES_ID  = 'sizeup-styles';
 
-  // ── Styles ──────────────────────────────────────────────────────────────────
-
   function injectStyles() {
     if (document.getElementById(STYLES_ID)) return;
     const style = document.createElement('style');
@@ -151,8 +149,6 @@ const SizeUpUI = (() => {
     document.head.appendChild(style);
   }
 
-  // ── Listing bar ─────────────────────────────────────────────────────────────
-
   function removeBar() {
     document.getElementById(BAR_ID)?.remove();
   }
@@ -200,8 +196,6 @@ const SizeUpUI = (() => {
 
     document.body.appendChild(bar);
   }
-
-  // ── Product banner ──────────────────────────────────────────────────────────
 
   function removeBanner() {
     document.getElementById(BANNER_ID)?.remove();
@@ -272,13 +266,9 @@ const SizeUpUI = (() => {
     return 'Fits';
   }
 
-  // ── Highlights ──────────────────────────────────────────────────────────────
-
   function clearHighlights() {
     document.querySelectorAll('.sizeup-match').forEach(el => el.classList.remove('sizeup-match'));
   }
-
-  // ── Public interface ────────────────────────────────────────────────────────
 
   return { injectStyles, showBar, removeBar, showBanner, removeBanner, clearHighlights };
 })();
