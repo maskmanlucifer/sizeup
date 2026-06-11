@@ -50,13 +50,6 @@ const ICON_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
 let editingId     = null;
 let selectedEmoji = '🌸';
 
-/** @param {number} cm @returns {string} rounded inches, or em-dash if empty */
-function inches(cm) {
-  cm = parseFloat(cm);
-  if (!cm) return '—';
-  return String(Math.round(cm / 2.54));
-}
-
 /**
  * Builds a simple body-diagram SVG with the tape placement for `kind`
  * highlighted in the accent colour. Used inside the per-field "?" tooltip.
@@ -185,8 +178,8 @@ function buildChips(m) {
   const sz    = deriveSizes(m);
   const chips = [];
   if (sz.top) chips.push(`Tops ${sz.top.alpha}`);
-  if (m.waist) chips.push(`Waist ${inches(m.waist)} in`);
-  if (m.hip)   chips.push(`Hip ${inches(m.hip)} in`);
+  if (m.waist) chips.push(`Waist ${m.waist} cm`);
+  if (m.hip)   chips.push(`Hip ${m.hip} cm`);
   if (!chips.length) return '<span class="chip empty">No measurements yet</span>';
   return chips.map(c => `<span class="chip">${c}</span>`).join('');
 }
@@ -228,8 +221,8 @@ function refreshDerived() {
 
   const sizes = deriveSizes(m);
   derTop.textContent   = sizes.top ? sizes.top.alpha : '—';
-  derWaist.textContent = m.waist ? `${inches(m.waist)} in` : '—';
-  derHip.textContent   = m.hip   ? `${inches(m.hip)} in`   : '—';
+  derWaist.textContent = m.waist ? `${m.waist} cm` : '—';
+  derHip.textContent   = m.hip   ? `${m.hip} cm`   : '—';
 }
 
 function refreshWarning(m) {
