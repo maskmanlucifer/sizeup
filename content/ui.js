@@ -43,7 +43,7 @@ const SizeUpUI = (() => {
       /* ── Shared header / footer ── */
       #sizeup-bar .su-head, #sizeup-banner .su-head {
         display: flex; align-items: center; gap: 7px;
-        padding: 10px 12px; border-bottom: 1px solid #F0F1F4;
+        padding: 12px; border-bottom: 1px solid #F0F1F4;
       }
       #sizeup-bar .su-mark, #sizeup-banner .su-mark {
         width: 22px; height: 22px; border-radius: 7px; background: #6C4DF6;
