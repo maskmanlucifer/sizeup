@@ -1,3 +1,13 @@
+/* Bundled locally so the popup opens instantly (no render-blocking web fetch).
+   Variable latin face covers weights 400–800. */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+}
+
 :root {
   --accent:        #6C4DF6;
   --accent-dark:   #5B3DE0;
