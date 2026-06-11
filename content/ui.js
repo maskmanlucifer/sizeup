@@ -90,7 +90,7 @@ const SizeUpUI = (() => {
       }
       #sizeup-bar .su-bar-pcard {
         width: 100%; display: flex; align-items: center; gap: 10px;
-        padding: 8px 10px; border: none; border-radius: 7px; background: #fff;
+        padding: 8px 14px 8px 10px; border: none; border-radius: 5px; background: #fff;
         cursor: pointer; text-align: left; font-family: inherit;
         transition: background 0.12s;
       }
@@ -112,7 +112,7 @@ const SizeUpUI = (() => {
       #sizeup-bar .su-pcard-size {
         flex-shrink: 0; font-size: 11px; font-weight: 700; color: #5B6170;
         background: #F3F4F7; min-width: 22px; height: 22px; padding: 0 6px;
-        border-radius: 6px; display: inline-flex; align-items: center; justify-content: center;
+        border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;
       }
 
       /* ── Product fit banner ── */
