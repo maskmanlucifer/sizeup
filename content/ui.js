@@ -28,7 +28,7 @@ const SizeUpUI = (() => {
         top: 70px; left: 20px;
         z-index: 2147483647;
         background: #fff; color: #1C1E26;
-        border: 1px solid #E7E9EF; border-radius: 14px;
+        border: 1px solid #E7E9EF; border-radius: 10px;
         box-shadow: 0 18px 40px -12px rgba(28,28,55,0.34);
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
         font-size: 13px; overflow: hidden;
@@ -53,15 +53,15 @@ const SizeUpUI = (() => {
         font-size: 12.5px; font-weight: 800; flex: 1; white-space: nowrap;
       }
       #sizeup-bar .su-close, #sizeup-banner .su-close {
-        width: 24px; height: 24px; flex-shrink: 0;
-        border: none; background: transparent; border-radius: 7px;
+        width: 20px; height: 20px; flex-shrink: 0;
+        border: none; background: transparent; border-radius: 5px;
         color: #A6ABB5; cursor: pointer;
         display: flex; align-items: center; justify-content: center; transition: 0.12s;
       }
       #sizeup-bar .su-close:hover, #sizeup-banner .su-close:hover { background: #F1F2F5; color: #5B6170; }
       #sizeup-bar .su-foot, #sizeup-banner .su-foot {
         padding: 8px 12px; border-top: 1px solid #F0F1F4;
-        font-size: 10px; color: #B7BCC6;
+        font-size: 10.5px; font-weight: 600; color: #8A909E;
       }
 
       /* ── Listing filter card ── */
