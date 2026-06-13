@@ -14,6 +14,23 @@ const derHip        = document.getElementById('der-hip');
 const toastEl       = document.getElementById('toast');
 const toastText     = document.getElementById('toast-text');
 
+// Gender / kind / kids controls
+const genderCtrl    = document.getElementById('gender-ctrl');
+const formTabs      = document.getElementById('form-tabs');
+const adultSection  = document.getElementById('adult-section');
+const kidSection    = document.getElementById('kid-section');
+const adultTiles    = document.getElementById('adult-tiles');
+const kidTiles      = document.getElementById('kid-tiles');
+const kidModeCtrl   = document.getElementById('kid-mode-ctrl');
+const kidAgeWrap    = document.getElementById('kid-age-wrap');
+const kidDobWrap    = document.getElementById('kid-dob-wrap');
+const fieldAge      = document.getElementById('field-age');
+const fieldDob      = document.getElementById('field-dob');
+const dobNoteBox    = document.getElementById('dob-note');
+const dobNoteText   = document.getElementById('dob-note-text');
+const derKidAge     = document.getElementById('der-kid-age');
+const derKidSize    = document.getElementById('der-kid-size');
+
 const MAX_MEMBERS = 10;
 
 /** Measurement fields, in order — with the per-field "how to measure" copy. */
@@ -47,8 +64,11 @@ const ICON_CHECK = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
   <polyline points="20 6 9 17 4 12"/>
 </svg>`;
 
-let editingId     = null;
-let selectedEmoji = '🌸';
+let editingId      = null;
+let selectedEmoji  = '🌸';
+let selectedGender = 'female';
+let selectedKind   = 'adult';
+let kidMode        = 'age';
 
 /**
  * Builds a simple body-diagram SVG with the tape placement for `kind`
@@ -70,6 +90,80 @@ function svgFigure(kind) {
     inseam:   v(70, 112, 168),
   };
   return `<svg viewBox="0 0 140 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${base}${tapes[kind] || ''}</svg>`;
+}
+
+/**
+ * Computes age in full years from an ISO date string.
+ * @param {string} dob - ISO date e.g. "2018-04-12"
+ * @returns {number|null}
+ */
+function ageFromDob(dob) {
+  if (!dob) return null;
+  const b = new Date(dob);
+  if (isNaN(b)) return null;
+  const now = new Date();
+  let a = now.getFullYear() - b.getFullYear();
+  const m = now.getMonth() - b.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < b.getDate())) a--;
+  return a < 0 ? null : a;
+}
+
+/**
+ * Returns the age-band clothing size label for a given age (years).
+ * @param {number} age
+ * @returns {string}
+ */
+function kidBand(age) {
+  age = parseInt(age, 10);
+  if (isNaN(age) || age < 0) return '—';
+  if (age < 1) return '0–6M';
+  if (age > 15) return '15–16Y';
+  return `${age}–${age + 1}Y`;
+}
+
+/** Switches between Adult and Kids form mode. */
+function setKind(kind) {
+  selectedKind = kind;
+  formTabs.querySelectorAll('.form-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.kind === kind)
+  );
+  adultSection.hidden = kind !== 'adult';
+  kidSection.hidden   = kind !== 'kid';
+  adultTiles.hidden   = kind !== 'adult';
+  kidTiles.hidden     = kind !== 'kid';
+  refreshGenderVisibility();
+  refreshDerived();
+}
+
+/**
+ * Hides the gender control for kids younger than 8 — sizing is unisex below
+ * that threshold and gender doesn't affect derived size bands.
+ */
+function refreshGenderVisibility() {
+  const genderLabel = genderCtrl.previousElementSibling; // the <label>
+  let showGender = true;
+  if (selectedKind === 'kid') {
+    let effAge = null;
+    if (kidMode === 'dob') effAge = ageFromDob(fieldDob.value);
+    else { effAge = parseInt(fieldAge.value, 10); if (isNaN(effAge)) effAge = null; }
+    // Hide gender for under-8s — kids clothing is unisex below that age
+    showGender = effAge === null || effAge >= 8;
+  }
+  genderCtrl.hidden = !showGender;
+  if (genderLabel?.tagName === 'LABEL') genderLabel.hidden = !showGender;
+}
+
+/** Switches between Age and Date-of-birth input within Kids mode. */
+function setKidMode(mode) {
+  kidMode = mode;
+  kidModeCtrl.querySelectorAll('.seg-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.mode === mode)
+  );
+  kidAgeWrap.hidden = mode !== 'age';
+  kidDobWrap.hidden = mode !== 'dob';
+  if (mode !== 'dob') dobNoteBox.hidden = true;
+  refreshGenderVisibility();
+  refreshDerived();
 }
 
 async function boot() {
@@ -158,7 +252,7 @@ function buildMemberCard(profile) {
   const card = document.createElement('div');
   card.className = 'member-card';
 
-  const chips = buildChips(profile.measurements || {});
+  const chips = buildChips(profile);
 
   card.innerHTML = `
     <div class="member-avatar">${profile.emoji}</div>
@@ -179,13 +273,26 @@ function buildMemberCard(profile) {
   return card;
 }
 
-/** Builds the per-card size chips (Tops · Waist · Hip) from measurements. */
-function buildChips(m) {
-  const sz    = deriveSizes(m);
+/** Builds the per-card size chips from a full profile object. */
+function buildChips(profile) {
+  if (profile.kind === 'kid') {
+    let age = null;
+    if (profile.kidMode === 'dob' && profile.dob) {
+      age = ageFromDob(profile.dob);
+    } else if (profile.age != null) {
+      age = parseInt(profile.age, 10);
+    }
+    if (age !== null && !isNaN(age)) {
+      return `<span class="chip">${kidBand(age)}</span>`;
+    }
+    return '<span class="chip empty">No age set</span>';
+  }
+  const m   = profile.measurements || {};
+  const sz  = deriveSizes(m, profile.gender);
   const chips = [];
-  if (sz.top) chips.push(`Tops ${sz.top.alpha}`);
-  if (m.waist) chips.push(`Waist ${m.waist} cm`);
-  if (m.hip)   chips.push(`Hip ${m.hip} cm`);
+  if (sz.top)  chips.push(`Tops ${sz.top.alpha}`);
+  if (m.waist) chips.push(`Waist ${Math.round(m.waist / 2.54)}"`);
+  if (m.hip)   chips.push(`Hip ${Math.round(m.hip   / 2.54)}"`);
   if (!chips.length) return '<span class="chip empty">No measurements yet</span>';
   return chips.map(c => `<span class="chip">${c}</span>`).join('');
 }
@@ -198,6 +305,34 @@ function showForm(profile = null) {
   document.getElementById('field-id').value   = editingId || '';
   document.getElementById('field-name').value = profile?.name || '';
 
+  // Gender
+  selectedGender = profile?.gender || 'female';
+  genderCtrl.querySelectorAll('.seg-btn').forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.gender === selectedGender)
+  );
+
+  // Adults / Kids kind (do not call refreshDerived inside setKind yet)
+  selectedKind = profile?.kind || 'adult';
+  formTabs.querySelectorAll('.form-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.kind === selectedKind)
+  );
+  adultSection.hidden = selectedKind !== 'adult';
+  kidSection.hidden   = selectedKind !== 'kid';
+  adultTiles.hidden   = selectedKind !== 'adult';
+  kidTiles.hidden     = selectedKind !== 'kid';
+
+  // Kids: age vs dob
+  kidMode = profile?.kidMode || 'age';
+  kidModeCtrl.querySelectorAll('.seg-btn').forEach(btn =>
+    btn.classList.toggle('active', btn.dataset.mode === kidMode)
+  );
+  kidAgeWrap.hidden = kidMode !== 'age';
+  kidDobWrap.hidden = kidMode !== 'dob';
+  dobNoteBox.hidden = true;
+  fieldAge.value = profile?.age ?? '';
+  fieldDob.value = profile?.dob || '';
+
+  // Adult measurements
   const m = profile?.measurements || {};
   ['height', 'chest', 'waist', 'hip', 'shoulder', 'inseam'].forEach(f => {
     document.getElementById(`field-${f}`).value = m[f] || '';
@@ -209,6 +344,7 @@ function showForm(profile = null) {
   });
   previewAvatar.textContent = selectedEmoji;
 
+  refreshGenderVisibility();
   refreshDerived();
   viewHome.hidden = true;
   viewForm.hidden = false;
@@ -222,13 +358,33 @@ function showHome() {
 }
 
 function refreshDerived() {
-  const m = readMeasurements();
-  refreshWarning(m);
-
-  const sizes = deriveSizes(m);
-  derTop.textContent   = sizes.top ? sizes.top.alpha : '—';
-  derWaist.textContent = m.waist ? `${m.waist} cm` : '—';
-  derHip.textContent   = m.hip   ? `${m.hip} cm`   : '—';
+  if (selectedKind === 'adult') {
+    const m = readMeasurements();
+    refreshWarning(m);
+    const sizes = deriveSizes(m, selectedGender);
+    derTop.textContent   = sizes.top ? sizes.top.alpha : '—';
+    derWaist.textContent = m.waist ? `${Math.round(m.waist / 2.54)}"` : '—';
+    derHip.textContent   = m.hip   ? `${Math.round(m.hip   / 2.54)}"` : '—';
+  } else {
+    // kids mode — derive size from age or DOB
+    let effAge = null;
+    if (kidMode === 'dob') {
+      effAge = ageFromDob(fieldDob.value);
+      const name = (document.getElementById('field-name').value || '').trim();
+      if (effAge !== null) {
+        dobNoteText.textContent = (name ? `${name}'s` : 'Their') +
+          " sizes update automatically as they grow — no need to re-measure.";
+        dobNoteBox.hidden = false;
+      } else {
+        dobNoteBox.hidden = true;
+      }
+    } else {
+      effAge = parseInt(fieldAge.value, 10);
+      if (isNaN(effAge) || effAge < 0) effAge = null;
+    }
+    derKidAge.textContent  = effAge !== null ? `${effAge}y` : '—';
+    derKidSize.textContent = effAge !== null ? kidBand(effAge) : '—';
+  }
 }
 
 function refreshWarning(m) {
@@ -256,18 +412,30 @@ async function handleSave() {
   const name   = nameEl.value.trim();
   if (!name) { nameEl.focus(); return; }
 
-  // Enforce limit only when adding a new profile
   if (!editingId) {
     const data = await getStorageData();
-    if (data.profiles.length >= MAX_MEMBERS) return; // button is disabled at limit
+    if (data.profiles.length >= MAX_MEMBERS) return;
   }
 
   const profile = {
-    id:           editingId || generateId(),
+    id:     editingId || generateId(),
     name,
-    emoji:        selectedEmoji,
-    measurements: readMeasurements(),
+    emoji:  selectedEmoji,
+    gender: selectedGender,
+    kind:   selectedKind,
   };
+
+  if (selectedKind === 'adult') {
+    profile.measurements = readMeasurements();
+  } else {
+    profile.kidMode = kidMode;
+    if (kidMode === 'age') {
+      const ageVal = parseInt(fieldAge.value, 10);
+      if (!isNaN(ageVal) && ageVal >= 0) profile.age = ageVal;
+    } else if (fieldDob.value) {
+      profile.dob = fieldDob.value;
+    }
+  }
 
   await saveProfile(profile);
   showHome();
@@ -314,9 +482,18 @@ function showInlineConfirm(card, id) {
  * checkmark to confirm the copy.
  */
 function copyProfilePrompt(profile, card) {
-  const m   = profile.measurements || {};
-  const sz  = deriveSizes(m);
-  const prompt = _buildPrompt(profile.name, m, sz);
+  let prompt;
+  if (profile.kind === 'kid') {
+    let age = null;
+    if (profile.kidMode === 'dob' && profile.dob) age = ageFromDob(profile.dob);
+    else if (profile.age != null) age = parseInt(profile.age, 10);
+    const band = age !== null ? kidBand(age) : 'unknown';
+    prompt = `Here are the measurements for ${profile.name} (child):\n\nAge: ${age !== null ? `${age} years` : 'unknown'}\nClothing size band: ${band}`;
+  } else {
+    const m  = profile.measurements || {};
+    const sz = deriveSizes(m, profile.gender);
+    prompt = _buildPrompt(profile.name, m, sz);
+  }
 
   navigator.clipboard.writeText(prompt).then(() => {
     const btn = card.querySelector('[data-action="copy"]');
@@ -367,6 +544,38 @@ function attachListeners() {
 
   ['field-chest', 'field-waist', 'field-hip'].forEach(id => {
     document.getElementById(id).addEventListener('input', refreshDerived);
+  });
+
+  // Gender segmented control
+  genderCtrl.addEventListener('click', e => {
+    const btn = e.target.closest('.seg-btn[data-gender]');
+    if (!btn) return;
+    selectedGender = btn.dataset.gender;
+    genderCtrl.querySelectorAll('.seg-btn').forEach(b =>
+      b.classList.toggle('active', b === btn)
+    );
+  });
+
+  // Adults / Kids tab switcher
+  formTabs.addEventListener('click', e => {
+    const btn = e.target.closest('.form-tab');
+    if (!btn) return;
+    setKind(btn.dataset.kind);
+  });
+
+  // Kids: age vs date-of-birth toggle
+  kidModeCtrl.addEventListener('click', e => {
+    const btn = e.target.closest('.seg-btn[data-mode]');
+    if (!btn) return;
+    setKidMode(btn.dataset.mode);
+  });
+
+  // Kids: live size derivation + gender visibility
+  fieldAge.addEventListener('input', () => { refreshGenderVisibility(); refreshDerived(); });
+  fieldDob.addEventListener('input', () => { refreshGenderVisibility(); refreshDerived(); });
+  // Update DOB note when name changes
+  document.getElementById('field-name').addEventListener('input', () => {
+    if (selectedKind === 'kid' && kidMode === 'dob') refreshDerived();
   });
 }
 

@@ -14,6 +14,9 @@ const SizeUpUI = (() => {
   /** Close (✕) icon. */
   const X_ICON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
 
+  /** Bug report link rendered in both widget footers. */
+  const BUG_LINK = `<a class="su-bug" href="mailto:brightpixellabs@gmail.com?subject=SizeUp%20Bug%20Report" target="_blank"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Report a bug</a>`;
+
   /** White check used in the selected filter checkbox. */
   const CHECK_ICON = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>`;
 
@@ -82,8 +85,14 @@ const SizeUpUI = (() => {
       #sizeup-bar .su-close:hover, #sizeup-banner .su-close:hover { background: #F1F2F5; color: #5B6170; }
       #sizeup-bar .su-foot, #sizeup-banner .su-foot {
         padding: 8px 12px; border-top: 1px solid #F0F1F4;
-        font-size: 10.5px; font-weight: 600; color: #8A909E;
+        display: flex; align-items: center; justify-content: flex-end;
       }
+      #sizeup-bar .su-bug, #sizeup-banner .su-bug {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 10px; font-weight: 600; color: #B0B6C3;
+        text-decoration: none; flex-shrink: 0; transition: color 0.12s;
+      }
+      #sizeup-bar .su-bug:hover, #sizeup-banner .su-bug:hover { color: #6C4DF6; }
 
       /* ── Listing filter card ── */
       #sizeup-bar .su-bar-profiles {
@@ -168,9 +177,6 @@ const SizeUpUI = (() => {
         <span class="su-pcard-size">${szLabel}</span>
       </button>`).join('');
 
-    const selN  = cardData.filter(c => c.checked).length;
-    const foot  = selN ? `${selN} selected — filtering by size` : 'Select members to filter this page';
-
     bar.innerHTML = `
       <div class="su-head">
         ${MARK}
@@ -178,7 +184,7 @@ const SizeUpUI = (() => {
         <button class="su-close" title="Close">${X_ICON}</button>
       </div>
       <div class="su-bar-profiles">${cards}</div>
-      <div class="su-foot">${foot}</div>
+      <div class="su-foot">${BUG_LINK}</div>
     `;
 
     bar.querySelectorAll('.su-bar-pcard').forEach((card, i) => {
@@ -232,7 +238,7 @@ const SizeUpUI = (() => {
         <button class="su-close" title="Dismiss">${X_ICON}</button>
       </div>
       <div class="su-banner-profiles">${cards}</div>
-      <div class="su-foot">Based on your saved measurements</div>
+      <div class="su-foot">${BUG_LINK}</div>
     `;
 
     el.querySelector('.su-close').addEventListener('click', () => {

@@ -187,6 +187,15 @@ input[type=number] { -moz-appearance: textfield; }
   font-size: 11.5px; color: var(--muted);
 }
 
+.bug-report-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  text-decoration: none;
+  align-self: flex-start;
+  transition: color 0.12s;
+}
+.bug-report-link:hover { color: var(--accent); }
+
 /* ── Supported sites ─────────────────────────────────────────────────────── */
 .supported { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .supported-label { font-size: 11.5px; font-weight: 600; color: var(--muted); }
@@ -400,6 +409,72 @@ input[type=number] { -moz-appearance: textfield; }
 .btn-inline-cancel:hover { background: #F6F7F9; }
 .btn-inline-ok { background: #FCEBEB; color: var(--red); }
 .btn-inline-ok:hover { background: #F9DADA; }
+
+/* ── Segmented control (gender, kid mode) ────────────────────────────────── */
+.segmented-ctrl {
+  display: flex; gap: 3px;
+  background: #F1F2F5; border-radius: 8px;
+  padding: 3px;
+}
+
+.seg-btn {
+  flex: 1; height: 34px;
+  border: none; border-radius: 6px;
+  font-size: 12.5px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: background 0.12s, box-shadow 0.12s;
+  background: transparent; color: var(--muted);
+}
+
+.seg-btn.active {
+  background: #fff; color: var(--ink);
+  box-shadow: 0 1px 3px rgba(28,28,55,0.14);
+}
+
+/* ── Adults / Kids tabs ───────────────────────────────────────────────────── */
+.form-tabs {
+  display: flex; gap: 18px;
+  margin-top: 18px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.form-tab {
+  position: relative;
+  border: none; background: transparent;
+  padding: 0 0 9px;
+  font-size: 13.5px; font-weight: 700; font-family: inherit;
+  cursor: pointer; color: var(--muted); transition: color 0.12s;
+}
+
+.form-tab.active { color: var(--accent); }
+
+.form-tab.active::after {
+  content: '';
+  position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 2.5px; background: var(--accent); border-radius: 3px;
+}
+
+/* ── Kids section ─────────────────────────────────────────────────────────── */
+.kid-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-top: 16px;
+  background: var(--accent-soft); border: 1px solid var(--accent-border);
+  border-radius: 7px; padding: 10px 11px;
+}
+.kid-note svg { flex: 0 0 auto; margin-top: 1px; }
+.kid-note span { font-size: 12px; line-height: 1.45; color: #4B3FA0; font-weight: 600; }
+.kid-note strong { font-weight: 800; }
+
+.dob-note {
+  display: flex; align-items: flex-start; gap: 7px;
+  margin-top: 10px;
+  background: #EAF7F0; border: 1px solid #CDEBDC;
+  border-radius: 7px; padding: 9px 11px;
+}
+.dob-note svg { flex: 0 0 auto; margin-top: 1px; }
+.dob-note span { font-size: 11.5px; line-height: 1.45; color: #0A6B47; font-weight: 600; }
+
+/* ── Kid-size tile (wider) ────────────────────────────────────────────────── */
+.tile-wide { flex: 2 !important; }
 
 /* ── Toast ───────────────────────────────────────────────────────────────── */
 .toast {

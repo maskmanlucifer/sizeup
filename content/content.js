@@ -73,13 +73,28 @@
     const category = categoryFromPath(location.pathname);
 
     const results = allProfiles.map(p => {
-      const { exact, adjacent } = getSizeLabelsExtended(p.measurements || {}, category);
-      if (!exact.length && !adjacent.length) return null;
+      let exact, adjacent, szLabel;
 
-      const sz = deriveSizes(p.measurements || {});
-      const szLabel = category === 'bottom'
-        ? (sz.bottom ? `Waist ${sz.bottom.label}` : '?')
-        : (sz.top ? `${sz.top.alpha} · ${sz.top.numeric}` : '?');
+      if (p.kind === 'kid') {
+        const ageMonths = getKidAgeMonthsFromProfile(p);
+        if (ageMonths == null) return null;
+        const labels = getKidSizeLabels(ageMonths);
+        exact    = labels.exact;
+        adjacent = labels.adjacent;
+        const band = getKidBandByMonths(ageMonths);
+        szLabel  = band ? band.band : '?';
+      } else {
+        // Adult: use category-restricted, gender-aware measurement-based labels
+        const labels2 = getSizeLabelsExtended(p.measurements || {}, category, p.gender);
+        exact    = labels2.exact;
+        adjacent = labels2.adjacent;
+        const sz = deriveSizes(p.measurements || {}, p.gender);
+        szLabel  = category === 'bottom'
+          ? (sz.bottom ? `Waist ${sz.bottom.label}` : '?')
+          : (sz.top ? `${sz.top.alpha} · ${sz.top.numeric}` : '?');
+      }
+
+      if (!exact.length && !adjacent.length) return null;
 
       // Pick the element(s) matching exact labels, preferring an in-stock one so
       // a sold-out duplicate doesn't mask an available size.
@@ -118,10 +133,22 @@
     const activeFacets = platform.getCurrentFilters();
 
     const cardData = allProfiles.map(p => {
-      const facet = platform.getSizeFacet(p.measurements || {});
-      if (!facet) return null;
-      const sz      = deriveSizes(p.measurements || {});
-      const szLabel = sz.top ? sz.top.alpha : sz.bottom ? sz.bottom.label : '?';
+      let facet, szLabel;
+
+      if (p.kind === 'kid') {
+        const ageMonths = getKidAgeMonthsFromProfile(p);
+        if (ageMonths == null) return null;
+        facet = platform.getKidSizeFacet(ageMonths, p.gender);
+        if (!facet) return null;
+        const band = getKidBandByMonths(ageMonths);
+        szLabel = band ? band.band : '?';
+      } else {
+        facet = platform.getSizeFacet(p.measurements || {}, p.gender);
+        if (!facet) return null;
+        const sz = deriveSizes(p.measurements || {}, p.gender);
+        szLabel = sz.top ? sz.top.alpha : sz.bottom ? sz.bottom.label : '?';
+      }
+
       return {
         profile:    p,
         szLabel,

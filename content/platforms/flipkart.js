@@ -2,8 +2,11 @@
  * Flipkart platform adapter.
  * Handles product page size matching and listing page URL filter construction.
  *
- * Size filter format: `p[]=facets.size[]=L` — one param per size value.
- * Multiple sizes:     `p[]=facets.size[]=L&p[]=facets.size[]=XL`
+ * Size filter:   `p[]=facets.size[]=L` — one param per value.
+ * Gender filter: `p[]=facets.ideal_for[]=Men` — Men / Women / Boys / Girls.
+ *
+ * facetValue encoding used internally: `"size|gender"` (e.g. `"l|men"`, `"7 - 8 years|boys"`).
+ * Kids under 8 use no gender: facetValue = just the size string.
  *
  * Note: Flipkart hashes its CSS class names on every deploy. The size button
  * selectors below use a known-class list with a heuristic fallback that walks
@@ -16,10 +19,14 @@ const FlipkartPlatform = (() => {
   }
 
   function onListingPage() {
-    if (!/\/[a-z-]+\/pr\b/i.test(location.pathname)) return false;
-    // Restrict to clothing categories via the `sid` hierarchy prefix
-    const sid = new URLSearchParams(location.search).get('sid') || '';
-    return sid.startsWith('clo');
+    // Category browse pages: /shirts/pr?sid=clo,...
+    if (/\/[a-z-]+\/pr\b/i.test(location.pathname)) {
+      const sid = new URLSearchParams(location.search).get('sid') || '';
+      return sid.startsWith('clo');
+    }
+    // Search results page: /search?q=shirt (no sid — allow all search queries)
+    if (location.pathname === '/search') return true;
+    return false;
   }
 
   /**
@@ -103,56 +110,112 @@ const FlipkartPlatform = (() => {
     return el.textContent.trim().split('\n')[0].trim();
   }
 
-  /**
-   * Maps profile measurements to the Flipkart size facet value for the current
-   * page category — alpha (S/M/L/XL) on tops, numeric waist on bottoms — so a
-   * top size is never applied to a bottoms listing or vice versa.
-   *
-   * @param {Object} measurements
-   * @returns {{ label: string, facetValue: string } | null}
-   */
-  function getSizeFacet(measurements) {
-    const { top, bottom } = deriveSizes(measurements);
-    if (categoryFromPath(location.pathname) === 'bottom') {
-      return bottom ? { label: bottom.label, facetValue: bottom.label } : null;
-    }
-    return top ? { label: top.alpha, facetValue: top.alpha } : null;
+  /** Maps a profile gender string to the Flipkart ideal_for value (Title Case). */
+  function _idealFor(gender, isKid) {
+    if (isKid)  return gender === 'male' ? 'Boys' : gender === 'female' ? 'Girls' : null;
+    return gender === 'male' ? 'Men' : gender === 'female' ? 'Women' : null;
   }
 
   /**
-   * Reads active size filters from the URL.
-   * Flipkart's native URLs double-encode the value (`facets.size%5B%5D%3DL`),
-   * so we decode each value before matching to handle both single- and double-
-   * encoded forms.
-   * @returns {Set<string>} lowercase active size values
+   * Maps a kid profile's age and gender to a Flipkart listing facet.
+   * facetValue encoding: `"size|gender"` for kids ≥ 8 years; plain size for under-8.
+   *
+   * @param {number} ageMonths
+   * @param {'male'|'female'|string} gender
+   * @returns {{ label: string, facetValue: string }}
+   */
+  function getKidSizeFacet(ageMonths, gender) {
+    const size      = getFlipkartKidSizeFacet(ageMonths);
+    const useGender = ageMonths >= 96; // under-8 clothing is unisex
+    const gTag      = useGender ? _idealFor(gender, true) : null;
+    const facetValue = gTag ? `${size}|${gTag.toLowerCase()}` : size;
+    return { label: size, facetValue };
+  }
+
+  /**
+   * Maps profile measurements to the Flipkart size facet value.
+   * facetValue encoding: `"size|gender"` (e.g. `"l|men"`, `"m|women"`).
+   *
+   * @param {Object} measurements
+   * @param {'male'|'female'|string} [gender]
+   * @returns {{ label: string, facetValue: string } | null}
+   */
+  function getSizeFacet(measurements, gender) {
+    const { top, bottom } = deriveSizes(measurements, gender);
+    let sizeLabel;
+    if (categoryFromPath(location.pathname) === 'bottom') {
+      if (!bottom) return null;
+      sizeLabel = bottom.label;
+    } else {
+      if (!top) return null;
+      sizeLabel = top.alpha;
+    }
+    const gTag       = _idealFor(gender, false);
+    const facetValue = gTag ? `${sizeLabel}|${gTag.toLowerCase()}` : sizeLabel;
+    return { label: sizeLabel, facetValue };
+  }
+
+  /**
+   * Reads active size and gender filters from the URL.
+   * Returns plain size strings AND combined `"size|gender"` entries so both
+   * plain and gender-encoded facetValues round-trip correctly through the toggle.
+   *
+   * @returns {Set<string>} lowercase entries
    */
   function getCurrentFilters() {
-    const params = new URLSearchParams(location.search);
-    const active = new Set();
+    const params  = new URLSearchParams(location.search);
+    const sizes   = [];
+    const genders = [];
+
     for (const v of params.getAll('p[]')) {
-      // Decode once more because Flipkart double-encodes the value in native URLs
       const decoded = _safeDecode(v);
-      const m = decoded.match(/^facets\.size\[\]=(.+)$/i);
-      if (m) active.add(m[1].toLowerCase());
+      const sm = decoded.match(/^facets\.size\[\]=(.+)$/i);
+      if (sm) { sizes.push(sm[1].toLowerCase()); continue; }
+      const gm = decoded.match(/^facets\.ideal_for\[\]=(.+)$/i);
+      if (gm) genders.push(gm[1].toLowerCase());
+    }
+
+    const active = new Set(sizes);
+    // Also add combined "size|gender" entries for every size × gender combo
+    for (const s of sizes) {
+      for (const g of genders) active.add(`${s}|${g}`);
     }
     return active;
   }
 
   /**
-   * Builds a Flipkart listing URL with the given sizes applied.
-   * Existing non-size `p[]` params (brand, colour, etc.) are preserved.
-   * An empty array clears the size filter.
+   * Builds a Flipkart listing URL with the given facet values applied.
+   * facetValues may be plain sizes (`"L"`) or `"size|gender"` encoded strings.
+   * Writes `facets.size[]` and `facets.ideal_for[]` params; preserves all others.
+   * An empty array clears both size and gender filters.
    *
    * @param {string[]} facetValues
    * @returns {string}
    */
   function buildFilterUrl(facetValues) {
     const url = new URL(location.href);
-    // Keep all p[] params that are not size facets (handle both encodings)
-    const others = url.searchParams.getAll('p[]').filter(v => !/^facets\.size(\[\]|%5B%5D)=/i.test(v) && !/^facets\.size\[\]=/i.test(_safeDecode(v)));
+
+    // Strip size and ideal_for params; keep brand, colour, etc.
+    const others = url.searchParams.getAll('p[]').filter(v => {
+      const d = _safeDecode(v);
+      return !/^facets\.size(\[\]|%5B%5D)=/i.test(v)      &&
+             !/^facets\.size\[\]=/i.test(d)                &&
+             !/^facets\.ideal_for(\[\]|%5B%5D)=/i.test(v) &&
+             !/^facets\.ideal_for\[\]=/i.test(d);
+    });
     url.searchParams.delete('p[]');
     for (const v of others) url.searchParams.append('p[]', v);
-    for (const size of facetValues) url.searchParams.append('p[]', `facets.size[]=${size}`);
+
+    // Split facetValues into unique sizes and unique genders
+    const sizes   = [...new Set(facetValues.map(v => v.split('|')[0]))];
+    const genders = [...new Set(
+      facetValues.map(v => v.split('|')[1]).filter(Boolean)
+        .map(g => g[0].toUpperCase() + g.slice(1)) // restore Title Case
+    )];
+
+    for (const size   of sizes)   url.searchParams.append('p[]', `facets.size[]=${size}`);
+    for (const gender of genders) url.searchParams.append('p[]', `facets.ideal_for[]=${gender}`);
+
     return url.toString();
   }
 
@@ -161,5 +224,5 @@ const FlipkartPlatform = (() => {
     try { return decodeURIComponent(v); } catch (_) { return v; }
   }
 
-  return { onProductPage, onListingPage, findSizeElements, isUnavailable, sizeText, getSizeFacet, getCurrentFilters, buildFilterUrl };
+  return { onProductPage, onListingPage, findSizeElements, isUnavailable, sizeText, getSizeFacet, getKidSizeFacet, getCurrentFilters, buildFilterUrl };
 })();

@@ -57,9 +57,12 @@
         </div>
       </div>
       <div class="privacy-note">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 8-4-1-7-4-7-8V6Z"/><path d="M9 12l2 2 4-4"/></svg>
         Private to your Chrome account — synced across your devices, never shared.
       </div>
+      <a class="bug-report-link" href="mailto:brightpixellabs@gmail.com?subject=SizeUp%20Bug%20Report" target="_blank">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        Report a bug
+      </a>
     </div>
   </div>
 
@@ -93,17 +96,59 @@
         <button class="emoji-btn" data-emoji="🍀" type="button">🍀</button>
       </div>
 
-      <!-- Measurement note -->
-      <div class="measure-note">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6C4DF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
-        <span>Enter <strong>body measurements</strong>, not clothing label sizes. Use a soft tape, in cm.</span>
+      <!-- Gender -->
+      <label class="label" style="margin-top:16px;">Gender</label>
+      <div class="segmented-ctrl" id="gender-ctrl">
+        <button class="seg-btn active" data-gender="female" type="button">Female</button>
+        <button class="seg-btn" data-gender="male" type="button">Male</button>
       </div>
 
-      <!-- Measurement fields (generated) -->
-      <div class="fields" id="fields"></div>
+      <!-- Adults / Kids tabs -->
+      <div class="form-tabs" id="form-tabs">
+        <button class="form-tab active" data-kind="adult" type="button">Adults</button>
+        <button class="form-tab" data-kind="kid" type="button">Kids</button>
+      </div>
 
-      <!-- Warn box -->
-      <div id="measure-warn" class="warn-box" hidden></div>
+      <!-- ADULT: measurements -->
+      <div id="adult-section">
+        <div class="measure-note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6C4DF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>Enter <strong>body measurements</strong>, not clothing label sizes. Use a soft tape, in cm.</span>
+        </div>
+        <div class="fields" id="fields"></div>
+        <div id="measure-warn" class="warn-box" hidden></div>
+      </div>
+
+      <!-- KIDS: age / dob -->
+      <div id="kid-section" hidden>
+        <div class="kid-note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6C4DF6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+          <span>For kids we size by <strong>age</strong>, not body measurements — clothing is sold in age bands.</span>
+        </div>
+
+        <label class="label" style="margin-top:16px;">Tell us their age by</label>
+        <div class="segmented-ctrl" id="kid-mode-ctrl">
+          <button class="seg-btn active" data-mode="age" type="button">Age</button>
+          <button class="seg-btn" data-mode="dob" type="button">Date of birth</button>
+        </div>
+
+        <div id="kid-age-wrap" style="margin-top:14px;">
+          <label class="label" for="field-age">Age</label>
+          <div class="frow-input-wrap">
+            <input id="field-age" class="frow-input" type="number" inputmode="numeric" placeholder="e.g. 8" />
+            <span class="frow-unit">years</span>
+          </div>
+        </div>
+
+        <div id="kid-dob-wrap" style="margin-top:14px;" hidden>
+          <label class="label" for="field-dob">Date of birth</label>
+          <input id="field-dob" class="input" type="date" />
+          <div id="dob-note" class="dob-note" hidden>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0A8F5C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4M5 12H3m18 0h-2M12 22v-4"/><circle cx="12" cy="12" r="4.5"/></svg>
+            <span id="dob-note-text"></span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Sticky footer: suggested sizes + actions -->
@@ -111,10 +156,16 @@
       <div class="suggested-head">
         <span class="suggested-label">Suggested sizes</span>
       </div>
-      <div class="suggested-tiles">
+      <!-- Adult tiles -->
+      <div id="adult-tiles" class="suggested-tiles">
         <div class="tile"><div class="tile-cap">TOPS</div><div class="tile-val" id="der-top">—</div></div>
         <div class="tile"><div class="tile-cap">WAIST</div><div class="tile-val" id="der-waist">—</div></div>
         <div class="tile"><div class="tile-cap">HIP</div><div class="tile-val" id="der-hip">—</div></div>
+      </div>
+      <!-- Kid tiles -->
+      <div id="kid-tiles" class="suggested-tiles" hidden>
+        <div class="tile"><div class="tile-cap">AGE</div><div class="tile-val" id="der-kid-age">—</div></div>
+        <div class="tile tile-wide"><div class="tile-cap">CLOTHING SIZE</div><div class="tile-val" id="der-kid-size">—</div></div>
       </div>
       <div class="form-actions">
         <button id="btn-cancel" class="btn btn-secondary" type="button">Cancel</button>
